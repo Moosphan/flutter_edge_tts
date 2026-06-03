@@ -1,6 +1,6 @@
 # flutter_edge_tts
 
-[![Version](https://img.shields.io/badge/version-0.0.1-blue.svg)](https://github.com/Moosphan/flutter_edge_tts/releases)
+[![Version](https://img.shields.io/badge/version-0.0.2-blue.svg)](https://github.com/Moosphan/flutter_edge_tts/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Platform: Android+iOS+macOS+Windows+Linux](https://img.shields.io/badge/platform-Android%20%7C%20iOS%20%7C%20macOS%20%7C%20Windows%20%7C%20Linux-0a7ea4)](#平台支持)
 
@@ -42,13 +42,13 @@
     <td align="center"><strong>桌面端</strong></td>
   </tr>
   <tr>
-    <td>
-      <img src="doc/images/screenshot_iphone_preview1.png" alt="iPhone 预览 1" width="230">
-      <img src="doc/images/screenshot_iphone_preview2.png" alt="iPhone 预览 2" width="230">
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/Moosphan/flutter_edge_tts/main/doc/images/screenshot_iphone_preview1.png" alt="iPhone 预览 1" width="200">
+      <img src="https://raw.githubusercontent.com/Moosphan/flutter_edge_tts/main/doc/images/screenshot_iphone_preview2.png" alt="iPhone 预览 2" width="200">
     </td>
-    <td>
-      <img src="doc/images/flutter_edge_tts_preview_mac1.png" alt="macOS 预览 1" width="420"><br>
-      <img src="doc/images/flutter_edge_tts_preview_mac2.png" alt="macOS 预览 2" width="420">
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/Moosphan/flutter_edge_tts/main/doc/images/flutter_edge_tts_preview_mac1.png" alt="macOS 预览 1" width="320"><br>
+      <img src="https://raw.githubusercontent.com/Moosphan/flutter_edge_tts/main/doc/images/flutter_edge_tts_preview_mac2.png" alt="macOS 预览 2" width="320">
     </td>
   </tr>
 </table>
@@ -57,7 +57,7 @@
 
 ```yaml
 dependencies:
-  flutter_edge_tts: ^0.0.1
+  flutter_edge_tts: ^0.0.2
 ```
 
 ```bash
@@ -193,32 +193,6 @@ tts.updateConfig(
 - 当前包不内置播放器，播放能力由宿主应用自行接入。
 - 音色数与语言数来自 live endpoint，后续可能随上游变化而变化。
 - 上游服务行为可能随时间变化。如果请求头、WebSocket 消息格式或音色接口发生变化，包可能需要同步升级。
-
-## 发布前检查清单
-
-- 更新版本号与 `CHANGELOG.md`
-- 确认 `pubspec.yaml` 中的仓库元信息
-- 在 `doc/images/` 下补充截图
-- 执行 `flutter analyze`
-- 执行 `flutter test`
-- 在 Android、iOS、macOS、Windows 和 Linux 上运行 example
-- 抽样验证几个 live 音色
-- 对照最终 API 检查 README 示例
-- 执行 `flutter pub publish --dry-run`
-
-## 发布脚本
-
-仓库内置了一键发布脚本，会自动执行检查、绕过本地镜像环境变量，并发布到官方 `pub.dev`：
-
-```bash
-./scripts/publish.sh
-```
-
-在 macOS 上，脚本会自动读取当前系统 HTTP/HTTPS 代理。如果你想手动指定代理，也可以这样执行：
-
-```bash
-./scripts/publish.sh --proxy http://127.0.0.1:7890
-```
 
 ## 项目
 

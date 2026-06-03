@@ -1,6 +1,6 @@
 name: flutter_edge_tts
 description: A free Flutter TTS package powered by Microsoft Edge online speech synthesis.
-version: 0.0.1
+version: 0.0.2
 homepage: https://github.com/Moosphan/flutter_edge_tts
 repository: https://github.com/Moosphan/flutter_edge_tts
 issue_tracker: https://github.com/Moosphan/flutter_edge_tts/issues
@@ -10,6 +10,12 @@ topics:
   - text-to-speech
   - speech-synthesis
   - audio
+
+screenshots:
+  - description: "Mobile example preview"
+    path: doc/images/screenshot_iphone_preview1.png
+  - description: "Desktop example preview"
+    path: doc/images/flutter_edge_tts_preview_mac1.png
 
 environment:
   sdk: ">=3.3.0 <4.0.0"

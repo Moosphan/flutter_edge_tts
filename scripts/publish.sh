@@ -26,7 +26,7 @@ Options:
 Examples:
   ./scripts/publish.sh
   ./scripts/publish.sh --dry-run-only
-  ./scripts/publish.sh --proxy http://127.0.0.1:7890
+  ./scripts/publish.sh --proxy <your-proxy-url>
 EOF
 }
 
@@ -134,7 +134,7 @@ check_pub_connectivity() {
     if [[ -n "$PUBLISH_PROXY" ]]; then
       fail "Unable to reach pub.dev through proxy $PUBLISH_PROXY."
     fi
-    fail "Unable to reach pub.dev directly. If your network needs a proxy, rerun with --proxy http://127.0.0.1:7890"
+    fail "Unable to reach pub.dev directly. If your network needs a proxy, rerun with --proxy <your-proxy-url>"
   fi
 }
 

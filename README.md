@@ -1,6 +1,6 @@
 # flutter_edge_tts
 
-[![Version](https://img.shields.io/badge/version-0.0.1-blue.svg)](https://github.com/Moosphan/flutter_edge_tts/releases)
+[![Version](https://img.shields.io/badge/version-0.0.2-blue.svg)](https://github.com/Moosphan/flutter_edge_tts/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Platform: Android+iOS+macOS+Windows+Linux](https://img.shields.io/badge/platform-Android%20%7C%20iOS%20%7C%20macOS%20%7C%20Windows%20%7C%20Linux-0a7ea4)](#platform-support)
 
@@ -42,13 +42,13 @@
     <td align="center"><strong>Desktop</strong></td>
   </tr>
   <tr>
-    <td>
-      <img src="doc/images/screenshot_iphone_preview1.png" alt="iPhone preview 1" width="230">
-      <img src="doc/images/screenshot_iphone_preview2.png" alt="iPhone preview 2" width="230">
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/Moosphan/flutter_edge_tts/main/doc/images/screenshot_iphone_preview1.png" alt="iPhone preview 1" width="200">
+      <img src="https://raw.githubusercontent.com/Moosphan/flutter_edge_tts/main/doc/images/screenshot_iphone_preview2.png" alt="iPhone preview 2" width="200">
     </td>
-    <td>
-      <img src="doc/images/flutter_edge_tts_preview_mac1.png" alt="macOS preview 1" width="420"><br>
-      <img src="doc/images/flutter_edge_tts_preview_mac2.png" alt="macOS preview 2" width="420">
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/Moosphan/flutter_edge_tts/main/doc/images/flutter_edge_tts_preview_mac1.png" alt="macOS preview 1" width="320"><br>
+      <img src="https://raw.githubusercontent.com/Moosphan/flutter_edge_tts/main/doc/images/flutter_edge_tts_preview_mac2.png" alt="macOS preview 2" width="320">
     </td>
   </tr>
 </table>
@@ -57,7 +57,7 @@
 
 ```yaml
 dependencies:
-  flutter_edge_tts: ^0.0.1
+  flutter_edge_tts: ^0.0.2
 ```
 
 ```bash
@@ -193,32 +193,6 @@ A runnable demo app is included in [example/lib/main.dart](example/lib/main.dart
 - Audio playback is intentionally left to the host app.
 - Voice and language counts come from the live endpoint and may change over time.
 - Upstream service behavior can change over time. If request headers, websocket framing, or voice endpoints change, the package may need to be updated.
-
-## Release checklist
-
-- Update the package version and `CHANGELOG.md`
-- Confirm `homepage`, `repository`, and `issue_tracker` in `pubspec.yaml`
-- Add screenshots under `doc/images/`
-- Run `flutter analyze`
-- Run `flutter test`
-- Run the example app on Android, iOS, macOS, Windows, and Linux
-- Validate a few live voices returned by `getVoices()`
-- Review README examples against the final public API
-- Run `flutter pub publish --dry-run`
-
-## Publish helper
-
-Use the bundled helper to run checks, bypass local mirror variables, and publish to the official `pub.dev` registry:
-
-```bash
-./scripts/publish.sh
-```
-
-On macOS, the script can auto-detect the current system HTTP/HTTPS proxy. If you want to override it manually:
-
-```bash
-./scripts/publish.sh --proxy http://127.0.0.1:7890
-```
 
 ## Project
 

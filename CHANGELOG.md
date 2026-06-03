@@ -1,3 +1,10 @@
+## 0.0.2
+
+* Added `pub.dev` screenshots metadata for package previews.
+* Updated README previews to use stable hosted image URLs and tighter sizing.
+* Removed maintainer-only publishing sections from the public README.
+* Improved the publish helper messaging to avoid hard-coded local proxy examples.
+
 ## 0.0.1
 
 * Initial open-source release candidate.
