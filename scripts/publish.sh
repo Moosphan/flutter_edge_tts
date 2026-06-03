@@ -49,11 +49,45 @@ confirm() {
   esac
 }
 
+detect_macos_proxy() {
+  command -v scutil >/dev/null 2>&1 || return 1
+
+  local proxy_info http_enabled http_host http_port https_enabled https_host https_port
+  proxy_info="$(scutil --proxy 2>/dev/null || true)"
+  [[ -n "$proxy_info" ]] || return 1
+
+  http_enabled="$(printf '%s\n' "$proxy_info" | awk '/HTTPEnable/ {print $3; exit}')"
+  http_host="$(printf '%s\n' "$proxy_info" | awk '/HTTPProxy/ {print $3; exit}')"
+  http_port="$(printf '%s\n' "$proxy_info" | awk '/HTTPPort/ {print $3; exit}')"
+  https_enabled="$(printf '%s\n' "$proxy_info" | awk '/HTTPSEnable/ {print $3; exit}')"
+  https_host="$(printf '%s\n' "$proxy_info" | awk '/HTTPSProxy/ {print $3; exit}')"
+  https_port="$(printf '%s\n' "$proxy_info" | awk '/HTTPSPort/ {print $3; exit}')"
+
+  if [[ "${https_enabled:-0}" == "1" && -n "${https_host:-}" && -n "${https_port:-}" ]]; then
+    printf 'http://%s:%s\n' "$https_host" "$https_port"
+    return 0
+  fi
+
+  if [[ "${http_enabled:-0}" == "1" && -n "${http_host:-}" && -n "${http_port:-}" ]]; then
+    printf 'http://%s:%s\n' "$http_host" "$http_port"
+    return 0
+  fi
+
+  return 1
+}
+
 setup_publish_env() {
   ENV_UNSET_ARGS=(
     -u PUB_HOSTED_URL
     -u FLUTTER_STORAGE_BASE_URL
   )
+
+  if [[ -z "$PUBLISH_PROXY" ]]; then
+    PUBLISH_PROXY="$(detect_macos_proxy || true)"
+    if [[ -n "$PUBLISH_PROXY" ]]; then
+      log info "Detected macOS system proxy: $PUBLISH_PROXY"
+    fi
+  fi
 
   if [[ -n "$PUBLISH_PROXY" ]]; then
     export HTTP_PROXY="$PUBLISH_PROXY"

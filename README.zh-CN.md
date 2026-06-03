@@ -214,7 +214,7 @@ tts.updateConfig(
 ./scripts/publish.sh
 ```
 
-如果本地网络访问 Google OAuth 需要代理，可以这样执行：
+在 macOS 上，脚本会自动读取当前系统 HTTP/HTTPS 代理。如果你想手动指定代理，也可以这样执行：
 
 ```bash
 ./scripts/publish.sh --proxy http://127.0.0.1:7890

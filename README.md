@@ -214,7 +214,7 @@ Use the bundled helper to run checks, bypass local mirror variables, and publish
 ./scripts/publish.sh
 ```
 
-If Google OAuth needs a proxy in your local network:
+On macOS, the script can auto-detect the current system HTTP/HTTPS proxy. If you want to override it manually:
 
 ```bash
 ./scripts/publish.sh --proxy http://127.0.0.1:7890
