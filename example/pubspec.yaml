@@ -1,0 +1,21 @@
+name: flutter_edge_tts_example
+publish_to: none
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  audioplayers: ^6.7.0
+  flutter:
+    sdk: flutter
+  flutter_edge_tts:
+    path: ../
+  path_provider: ^2.1.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
