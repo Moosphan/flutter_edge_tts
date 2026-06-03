@@ -5,7 +5,6 @@ homepage: https://github.com/Moosphan/flutter_edge_tts
 repository: https://github.com/Moosphan/flutter_edge_tts
 issue_tracker: https://github.com/Moosphan/flutter_edge_tts/issues
 topics:
-  - flutter-tts
   - tts
   - edge-tts
   - text-to-speech
