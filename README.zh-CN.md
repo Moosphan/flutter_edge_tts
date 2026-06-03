@@ -1,6 +1,6 @@
 # flutter_edge_tts
 
-[![Version](https://img.shields.io/badge/version-0.0.2-blue.svg)](https://github.com/Moosphan/flutter_edge_tts/releases)
+[![Version](https://img.shields.io/pub/v/flutter_edge_tts.svg)](https://pub.dev/packages/flutter_edge_tts)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Platform: Android+iOS+macOS+Windows+Linux](https://img.shields.io/badge/platform-Android%20%7C%20iOS%20%7C%20macOS%20%7C%20Windows%20%7C%20Linux-0a7ea4)](#平台支持)
 
