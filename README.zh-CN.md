@@ -206,6 +206,20 @@ tts.updateConfig(
 - 对照最终 API 检查 README 示例
 - 执行 `flutter pub publish --dry-run`
 
+## 发布脚本
+
+仓库内置了一键发布脚本，会自动执行检查、绕过本地镜像环境变量，并发布到官方 `pub.dev`：
+
+```bash
+./scripts/publish.sh
+```
+
+如果本地网络访问 Google OAuth 需要代理，可以这样执行：
+
+```bash
+./scripts/publish.sh --proxy http://127.0.0.1:7890
+```
+
 ## 项目
 
 - Repository: [Moosphan/flutter_edge_tts](https://github.com/Moosphan/flutter_edge_tts)

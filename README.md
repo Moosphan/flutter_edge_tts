@@ -206,6 +206,20 @@ A runnable demo app is included in [example/lib/main.dart](example/lib/main.dart
 - Review README examples against the final public API
 - Run `flutter pub publish --dry-run`
 
+## Publish helper
+
+Use the bundled helper to run checks, bypass local mirror variables, and publish to the official `pub.dev` registry:
+
+```bash
+./scripts/publish.sh
+```
+
+If Google OAuth needs a proxy in your local network:
+
+```bash
+./scripts/publish.sh --proxy http://127.0.0.1:7890
+```
+
 ## Project
 
 - Repository: [Moosphan/flutter_edge_tts](https://github.com/Moosphan/flutter_edge_tts)
