@@ -60,7 +60,13 @@ jobs:
 
       - name: Install Linux build dependencies
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev ninja-build
+        run: >
+          sudo apt-get update &&
+          sudo apt-get install -y
+          libgtk-3-dev
+          libgstreamer1.0-dev
+          libgstreamer-plugins-base1.0-dev
+          ninja-build
 
       - name: Install example dependencies
         run: flutter pub get
