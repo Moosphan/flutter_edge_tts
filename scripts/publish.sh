@@ -53,12 +53,6 @@ setup_publish_env() {
   ENV_UNSET_ARGS=(
     -u PUB_HOSTED_URL
     -u FLUTTER_STORAGE_BASE_URL
-    -u HTTP_PROXY
-    -u HTTPS_PROXY
-    -u ALL_PROXY
-    -u http_proxy
-    -u https_proxy
-    -u all_proxy
   )
 
   if [[ -n "$PUBLISH_PROXY" ]]; then
@@ -67,6 +61,15 @@ setup_publish_env() {
     export ALL_PROXY="$PUBLISH_PROXY"
     export NO_PROXY="${NO_PROXY:-127.0.0.1,localhost}"
     log info "Using proxy: $PUBLISH_PROXY"
+  else
+    ENV_UNSET_ARGS+=(
+      -u HTTP_PROXY
+      -u HTTPS_PROXY
+      -u ALL_PROXY
+      -u http_proxy
+      -u https_proxy
+      -u all_proxy
+    )
   fi
 }
 
