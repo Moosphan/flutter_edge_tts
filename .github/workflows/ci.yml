@@ -8,7 +8,33 @@ on:
   pull_request:
 
 jobs:
-  validate:
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze package
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Validate publish readiness
+        run: flutter pub publish --dry-run
+
+  example-desktop:
+    needs: package
     strategy:
       fail-fast: false
       matrix:
@@ -32,11 +58,13 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Analyze package
-        run: flutter analyze
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev ninja-build
 
-      - name: Run tests
-        run: flutter test
+      - name: Install example dependencies
+        run: flutter pub get
+        working-directory: example
 
       - name: Build Linux example
         if: runner.os == 'Linux'
@@ -52,6 +80,3 @@ jobs:
         if: runner.os == 'Windows'
         run: flutter build windows
         working-directory: example
-
-      - name: Validate publish readiness
-        run: flutter pub publish --dry-run
