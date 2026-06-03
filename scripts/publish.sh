@@ -9,6 +9,7 @@ SKIP_CHECKS=0
 ALLOW_DIRTY=0
 AUTO_CONFIRM=0
 PUBLISH_PROXY=""
+ENV_UNSET_ARGS=()
 
 print_usage() {
   cat <<'EOF'
@@ -46,6 +47,62 @@ confirm() {
     y|Y|yes|YES) return 0 ;;
     *) return 1 ;;
   esac
+}
+
+setup_publish_env() {
+  ENV_UNSET_ARGS=(
+    -u PUB_HOSTED_URL
+    -u FLUTTER_STORAGE_BASE_URL
+    -u HTTP_PROXY
+    -u HTTPS_PROXY
+    -u ALL_PROXY
+    -u http_proxy
+    -u https_proxy
+    -u all_proxy
+  )
+
+  if [[ -n "$PUBLISH_PROXY" ]]; then
+    export HTTP_PROXY="$PUBLISH_PROXY"
+    export HTTPS_PROXY="$PUBLISH_PROXY"
+    export ALL_PROXY="$PUBLISH_PROXY"
+    export NO_PROXY="${NO_PROXY:-127.0.0.1,localhost}"
+    log info "Using proxy: $PUBLISH_PROXY"
+  fi
+}
+
+validate_proxy() {
+  [[ -n "$PUBLISH_PROXY" ]] || return 0
+
+  local proxy_host proxy_port remainder
+  remainder="${PUBLISH_PROXY#*://}"
+  proxy_host="${remainder%%:*}"
+  proxy_port="${remainder##*:}"
+
+  if [[ -z "$proxy_host" || -z "$proxy_port" || "$proxy_host" == "$proxy_port" ]]; then
+    fail "Invalid proxy URL: $PUBLISH_PROXY"
+  fi
+
+  if ! nc -z "$proxy_host" "$proxy_port" >/dev/null 2>&1; then
+    fail "Proxy is not reachable at $proxy_host:$proxy_port. Check your local proxy app and port."
+  fi
+}
+
+check_pub_connectivity() {
+  local curl_cmd=(curl -I --max-time 15 https://pub.dev)
+  if [[ -n "$PUBLISH_PROXY" ]]; then
+    curl_cmd+=(--proxy "$PUBLISH_PROXY")
+  fi
+
+  if ! "${curl_cmd[@]}" >/dev/null 2>&1; then
+    if [[ -n "$PUBLISH_PROXY" ]]; then
+      fail "Unable to reach pub.dev through proxy $PUBLISH_PROXY."
+    fi
+    fail "Unable to reach pub.dev directly. If your network needs a proxy, rerun with --proxy http://127.0.0.1:7890"
+  fi
+}
+
+run_pub_command() {
+  env "${ENV_UNSET_ARGS[@]}" flutter pub "$@"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -93,14 +150,6 @@ if [[ "$ALLOW_DIRTY" -ne 1 ]]; then
   fi
 fi
 
-if [[ -n "$PUBLISH_PROXY" ]]; then
-  export HTTP_PROXY="$PUBLISH_PROXY"
-  export HTTPS_PROXY="$PUBLISH_PROXY"
-  export ALL_PROXY="$PUBLISH_PROXY"
-  export NO_PROXY="${NO_PROXY:-127.0.0.1,localhost}"
-  log info "Using proxy: $PUBLISH_PROXY"
-fi
-
 if [[ -n "${PUB_HOSTED_URL:-}" ]]; then
   log info "Temporarily ignoring PUB_HOSTED_URL=${PUB_HOSTED_URL} for official pub.dev publishing."
 fi
@@ -108,6 +157,10 @@ fi
 if [[ -n "${FLUTTER_STORAGE_BASE_URL:-}" ]]; then
   log info "Temporarily ignoring FLUTTER_STORAGE_BASE_URL=${FLUTTER_STORAGE_BASE_URL} for official pub.dev publishing."
 fi
+
+setup_publish_env
+validate_proxy
+check_pub_connectivity
 
 if [[ "$SKIP_CHECKS" -ne 1 ]]; then
   log step "Running flutter analyze"
@@ -118,7 +171,7 @@ if [[ "$SKIP_CHECKS" -ne 1 ]]; then
 fi
 
 log step "Running flutter pub publish --dry-run"
-env -u PUB_HOSTED_URL -u FLUTTER_STORAGE_BASE_URL flutter pub publish --dry-run
+run_pub_command publish --dry-run
 
 if [[ "$DRY_RUN_ONLY" -eq 1 ]]; then
   log done "Dry run finished successfully."
@@ -133,6 +186,6 @@ if [[ "$AUTO_CONFIRM" -ne 1 ]]; then
 fi
 
 log step "Publishing to pub.dev"
-env -u PUB_HOSTED_URL -u FLUTTER_STORAGE_BASE_URL flutter pub publish
+run_pub_command publish
 
 log done "Publish command completed."
