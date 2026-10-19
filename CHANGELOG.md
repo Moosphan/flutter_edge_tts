@@ -1,3 +1,9 @@
+## Unreleased
+
+* Restored compatibility with Edge's v2 Sec-MS-GEC authentication protocol.
+* Marked WAV output as unsupported because the upstream endpoint completes WAV
+  requests without returning audio; use raw PCM, MP3, WebM, or Ogg instead.
+
 ## 0.0.2
 
 * Added `pub.dev` screenshots metadata for package previews.

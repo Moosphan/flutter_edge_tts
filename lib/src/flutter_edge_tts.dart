@@ -45,7 +45,7 @@ class FlutterEdgeTts {
   static const String _wssUrl =
       'wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1';
   static const String _chromiumFullVersion = '143.0.3650.75';
-  static const String _secMsGecVersion = '1-$_chromiumFullVersion';
+  static const String _secMsGecVersion = '2-$_chromiumFullVersion';
   static const String _defaultUserAgent =
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
       '(KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0';
@@ -89,7 +89,6 @@ class FlutterEdgeTts {
         'Cache-Control': 'no-cache',
         'Origin': origin,
         'Sec-WebSocket-Version': '13',
-        HttpHeaders.cookieHeader: 'muid=${EdgeTtsUtils.generateMuid()};',
       };
 
   void updateConfig(EdgeTtsConfig config) {
@@ -149,6 +148,7 @@ class FlutterEdgeTts {
     EdgeTtsConfig? config,
   }) {
     final resolvedConfig = config ?? _config;
+    resolvedConfig.outputFormat.requireSupported();
     final requestId = EdgeTtsUtils.generateRequestId();
     final controller = StreamController<EdgeTtsStreamEvent>();
     WebSocket? socket;
@@ -341,7 +341,8 @@ class FlutterEdgeTts {
     final url = await _buildSynthesisUrl();
     _log('Connecting websocket: $url');
     final uri = Uri.parse(url);
-    final requestUri = uri.replace(scheme: uri.scheme == 'wss' ? 'https' : 'http');
+    final requestUri =
+        uri.replace(scheme: uri.scheme == 'wss' ? 'https' : 'http');
     final httpClient = HttpClient()..userAgent = userAgent;
     try {
       final request = await httpClient
@@ -372,7 +373,7 @@ class FlutterEdgeTts {
         throw EdgeTtsException(
           'websocket_upgrade_failed',
           'Edge TTS websocket upgrade failed with status '
-          '${response.statusCode}.',
+              '${response.statusCode}.',
           cause: body.isEmpty ? null : body,
         );
       }
@@ -396,7 +397,7 @@ class FlutterEdgeTts {
 
   Future<String> _buildSynthesisUrl() async {
     final connectionId = EdgeTtsUtils.generateConnectionId();
-    final secMsGec = EdgeTtsUtils.generateSecMsGec(_trustedClientToken);
+    final secMsGec = EdgeTtsUtils.generateSecMsGecV2(_trustedClientToken);
     return '$_wssUrl'
         '?TrustedClientToken=$_trustedClientToken'
         '&Sec-MS-GEC=$secMsGec'
@@ -423,7 +424,7 @@ class FlutterEdgeTts {
     });
     return 'X-Timestamp:$timestamp\r\n'
         'Content-Type:application/json; charset=utf-8\r\n'
-        'Path:speech.config$_jsonXmlDelimiter$body';
+        'Path:speech.config$_jsonXmlDelimiter$body\r\n';
   }
 
   String _buildSsmlRequest({

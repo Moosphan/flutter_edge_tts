@@ -31,7 +31,12 @@ jobs:
         run: flutter test
 
       - name: Validate publish readiness
-        run: flutter pub publish --dry-run
+        # `flutter pub get` may migrate legacy analysis options in place on a
+        # freshly checked-out repository. Avoid treating that Flutter tool
+        # side effect as an unpublished source change during package checks.
+        run: |
+          git restore analysis_options.yaml example/analysis_options.yaml
+          flutter pub publish --dry-run
 
   example-desktop:
     needs: package

@@ -1,0 +1,17 @@
+flutter_edge_tts licensing notice
+===============================
+
+Unless stated otherwise, this repository is licensed under the MIT License;
+see LICENSE.
+
+The Edge v2 Sec-MS-GEC token implementation in
+lib/src/utils/edge_tts_utils.dart is a modified Dart port of the DRM token
+implementation in rany2/edge-tts:
+
+  https://github.com/rany2/edge-tts/blob/bd44c1d1aaebdc1db7f47456ee12431b42ec7cac/src/edge_tts/drm.py
+
+Copyright (C) 2025 rany <rany@riseup.net>
+
+That portion is available under the GNU Lesser General Public License,
+version 3 or (at your option) any later version. Its source is included in
+this repository and the license text is in LICENSES/LGPL-3.0.txt.

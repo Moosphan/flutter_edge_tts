@@ -1,7 +1,7 @@
 # flutter_edge_tts
 
 [![Version](https://img.shields.io/pub/v/flutter_edge_tts.svg)](https://pub.dev/packages/flutter_edge_tts)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![License: MIT and LGPL-3.0](https://img.shields.io/badge/license-MIT%20%2B%20LGPL--3.0-green.svg)](NOTICE)
 [![Platform: Android+iOS+macOS+Windows+Linux](https://img.shields.io/badge/platform-Android%20%7C%20iOS%20%7C%20macOS%20%7C%20Windows%20%7C%20Linux-0a7ea4)](#平台支持)
 
 <table>
@@ -23,7 +23,7 @@
 - 支持文本合成为字节、文件或流式事件
 - 支持原始 SSML 合成
 - 支持句子边界和单词边界元数据
-- 支持 MP3、WebM、Ogg、PCM、WAV 等输出格式
+- 支持 MP3、WebM、Ogg 和原始 PCM 输出格式
 - 截至 2026-06-03，live endpoint 当前返回 322 个音色，覆盖 142 个 locale、75 种语言
 
 ## 平台支持
@@ -177,6 +177,8 @@ tts.updateConfig(
 
 更广的 Microsoft Azure Speech 生态中还存在 `Neural`、`MultilingualNeural`、`Neural HD`、`MAI-Voice-1` 等音色家族。当前包围绕 Edge Read Aloud 风格的传输链路实现，而不是完整 Azure Speech SDK 封装，因此标准 `Neural` 音色是最稳妥的默认选择。更偏 Azure 专有能力的高级音色，建议先在你的环境中验证，再作为正式支持项开放。
 
+Edge Read Aloud 端点不会为 WAV（`riff-24khz-16bit-mono-pcm`）请求返回音频字节；请改用原始 PCM，或 MP3、WebM、Ogg 等容器格式。
+
 在实际接入中，优先使用 `getVoices()` 的动态返回结果，而不是完全依赖手工硬编码。
 
 ## 元数据
@@ -199,6 +201,9 @@ tts.updateConfig(
 - Repository: [Moosphan/flutter_edge_tts](https://github.com/Moosphan/flutter_edge_tts)
 - Issue tracker: [GitHub Issues](https://github.com/Moosphan/flutter_edge_tts/issues)
 
-## License
+## 许可证
 
-[MIT](LICENSE)
+本包采用 [MIT 许可证](LICENSE)，但
+`lib/src/utils/edge_tts_utils.dart` 中的 Edge v2 鉴权实现是对
+[rany2/edge-tts](https://github.com/rany2/edge-tts) 的修改移植，采用
+[LGPL-3.0-or-later](LICENSES/LGPL-3.0.txt)。版权与源代码信息见 [NOTICE](NOTICE)。

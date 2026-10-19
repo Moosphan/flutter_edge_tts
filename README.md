@@ -1,7 +1,7 @@
 # flutter_edge_tts
 
 [![Version](https://img.shields.io/pub/v/flutter_edge_tts.svg)](https://pub.dev/packages/flutter_edge_tts)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![License: MIT and LGPL-3.0](https://img.shields.io/badge/license-MIT%20%2B%20LGPL--3.0-green.svg)](NOTICE)
 [![Platform: Android+iOS+macOS+Windows+Linux](https://img.shields.io/badge/platform-Android%20%7C%20iOS%20%7C%20macOS%20%7C%20Windows%20%7C%20Linux-0a7ea4)](#platform-support)
 
 <table>
@@ -23,7 +23,7 @@
 - Supports text synthesis to bytes, files, or stream events
 - Supports raw SSML synthesis
 - Supports optional sentence and word boundary metadata
-- Supports multiple output formats including MP3, WebM, Ogg, PCM, and WAV
+- Supports MP3, WebM, Ogg, and raw PCM output formats
 - As of 2026-06-03, the live endpoint returns 322 voices across 142 locales and 75 languages
 
 ## Platform support
@@ -177,6 +177,8 @@ The locale prefix identifies the primary locale of the voice. The package uses t
 
 The broader Microsoft Azure Speech ecosystem includes voice families such as `Neural`, `MultilingualNeural`, `Neural HD`, and `MAI-Voice-1`. This package is implemented around the Edge Read Aloud style transport path rather than the full Azure Speech SDK surface, so standard neural voices are the safest default choice. Advanced Azure-only voice families should be validated in your own environment before being exposed as supported options.
 
+The Edge Read Aloud endpoint does not return bytes for WAV (`riff-24khz-16bit-mono-pcm`) requests. Use raw PCM or a container format such as MP3, WebM, or Ogg instead.
+
 For production integrations, prefer voices returned by `getVoices()` over hard-coded assumptions.
 
 ## Metadata
@@ -201,4 +203,8 @@ A runnable demo app is included in [example/lib/main.dart](example/lib/main.dart
 
 ## License
 
-[MIT](LICENSE)
+The package is [MIT licensed](LICENSE), except the Edge v2 authentication
+implementation in `lib/src/utils/edge_tts_utils.dart`, which is a modified
+port of [rany2/edge-tts](https://github.com/rany2/edge-tts) and is licensed
+under [LGPL-3.0-or-later](LICENSES/LGPL-3.0.txt). See [NOTICE](NOTICE) for
+copyright and source information.
