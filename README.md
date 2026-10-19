@@ -23,7 +23,7 @@
 - Supports text synthesis to bytes, files, or stream events
 - Supports raw SSML synthesis
 - Supports optional sentence and word boundary metadata
-- Supports multiple output formats including MP3, WebM, Ogg, PCM, and WAV
+- Supports MP3, WebM, Ogg, and raw PCM output formats
 - As of 2026-06-03, the live endpoint returns 322 voices across 142 locales and 75 languages
 
 ## Platform support
@@ -176,6 +176,8 @@ Common voice names look like:
 The locale prefix identifies the primary locale of the voice. The package uses this naming pattern to infer a default `voiceLocale` when one is not provided explicitly.
 
 The broader Microsoft Azure Speech ecosystem includes voice families such as `Neural`, `MultilingualNeural`, `Neural HD`, and `MAI-Voice-1`. This package is implemented around the Edge Read Aloud style transport path rather than the full Azure Speech SDK surface, so standard neural voices are the safest default choice. Advanced Azure-only voice families should be validated in your own environment before being exposed as supported options.
+
+The Edge Read Aloud endpoint does not return bytes for WAV (`riff-24khz-16bit-mono-pcm`) requests. Use raw PCM or a container format such as MP3, WebM, or Ogg instead.
 
 For production integrations, prefer voices returned by `getVoices()` over hard-coded assumptions.
 

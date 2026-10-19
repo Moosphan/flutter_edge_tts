@@ -23,7 +23,7 @@
 - 支持文本合成为字节、文件或流式事件
 - 支持原始 SSML 合成
 - 支持句子边界和单词边界元数据
-- 支持 MP3、WebM、Ogg、PCM、WAV 等输出格式
+- 支持 MP3、WebM、Ogg 和原始 PCM 输出格式
 - 截至 2026-06-03，live endpoint 当前返回 322 个音色，覆盖 142 个 locale、75 种语言
 
 ## 平台支持
@@ -176,6 +176,8 @@ tts.updateConfig(
 音色名前缀中的 locale 表示该音色的主语言区域。当前包也会利用这一命名规则，在没有显式传入 `voiceLocale` 时自动推断默认值。
 
 更广的 Microsoft Azure Speech 生态中还存在 `Neural`、`MultilingualNeural`、`Neural HD`、`MAI-Voice-1` 等音色家族。当前包围绕 Edge Read Aloud 风格的传输链路实现，而不是完整 Azure Speech SDK 封装，因此标准 `Neural` 音色是最稳妥的默认选择。更偏 Azure 专有能力的高级音色，建议先在你的环境中验证，再作为正式支持项开放。
+
+Edge Read Aloud 端点不会为 WAV（`riff-24khz-16bit-mono-pcm`）请求返回音频字节；请改用原始 PCM，或 MP3、WebM、Ogg 等容器格式。
 
 在实际接入中，优先使用 `getVoices()` 的动态返回结果，而不是完全依赖手工硬编码。
 
