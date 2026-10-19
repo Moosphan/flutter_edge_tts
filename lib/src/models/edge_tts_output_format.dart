@@ -1,3 +1,5 @@
+import 'edge_tts_exception.dart';
+
 enum EdgeTtsOutputFormat {
   audio16Khz32KbitrateMonoMp3(
     value: 'audio-16khz-32kbitrate-mono-mp3',
@@ -46,4 +48,19 @@ enum EdgeTtsOutputFormat {
       fileExtension == 'webm' ||
       fileExtension == 'ogg' ||
       fileExtension == 'wav';
+
+  /// Ensures that the Edge Read Aloud websocket can generate this format.
+  ///
+  /// The upstream endpoint accepts a WAV request but ends the turn without
+  /// returning bytes, so fail deterministically instead of surfacing the
+  /// misleading [EdgeTtsException] `empty_audio` error.
+  void requireSupported() {
+    if (this == EdgeTtsOutputFormat.riff24Khz16BitMonoPcm) {
+      throw const EdgeTtsException(
+        'unsupported_output_format',
+        'The Edge Read Aloud endpoint does not return WAV audio. '
+            'Use raw24Khz16BitMonoPcm or an MP3, WebM, or Ogg format instead.',
+      );
+    }
+  }
 }
