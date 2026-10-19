@@ -1,7 +1,7 @@
 # flutter_edge_tts
 
 [![Version](https://img.shields.io/pub/v/flutter_edge_tts.svg)](https://pub.dev/packages/flutter_edge_tts)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![License: MIT and LGPL-3.0](https://img.shields.io/badge/license-MIT%20%2B%20LGPL--3.0-green.svg)](NOTICE)
 [![Platform: Android+iOS+macOS+Windows+Linux](https://img.shields.io/badge/platform-Android%20%7C%20iOS%20%7C%20macOS%20%7C%20Windows%20%7C%20Linux-0a7ea4)](#platform-support)
 
 <table>
@@ -203,4 +203,8 @@ A runnable demo app is included in [example/lib/main.dart](example/lib/main.dart
 
 ## License
 
-[MIT](LICENSE)
+The package is [MIT licensed](LICENSE), except the Edge v2 authentication
+implementation in `lib/src/utils/edge_tts_utils.dart`, which is a modified
+port of [rany2/edge-tts](https://github.com/rany2/edge-tts) and is licensed
+under [LGPL-3.0-or-later](LICENSES/LGPL-3.0.txt). See [NOTICE](NOTICE) for
+copyright and source information.

@@ -128,9 +128,15 @@ class EdgeTtsUtils {
   }
 }
 
-/// DRM module is used to handle DRM operations with clock skew correction.
-/// Currently the only DRM operation is generating the Sec-MS-GEC token value
-/// used in all API requests to Microsoft Edge's online text-to-speech service.
+// Copyright (C) 2025 rany <rany@riseup.net>
+// SPDX-License-Identifier: LGPL-3.0-or-later
+//
+// This v2 Sec-MS-GEC implementation is a Dart port of the DRM token
+// implementation from rany2/edge-tts (commit bd44c1d1), adapted for this
+// package.  It is licensed under the GNU Lesser General Public License,
+// version 3 or later.  See LICENSES/LGPL-3.0.txt and NOTICE.
+//
+// DRM token generation for Microsoft Edge's online text-to-speech service.
 
 const int _edgeWinEpoch = 11644473600;
 const double _edgeSecondsToNanoseconds = 1e9;

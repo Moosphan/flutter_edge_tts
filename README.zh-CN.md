@@ -1,7 +1,7 @@
 # flutter_edge_tts
 
 [![Version](https://img.shields.io/pub/v/flutter_edge_tts.svg)](https://pub.dev/packages/flutter_edge_tts)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![License: MIT and LGPL-3.0](https://img.shields.io/badge/license-MIT%20%2B%20LGPL--3.0-green.svg)](NOTICE)
 [![Platform: Android+iOS+macOS+Windows+Linux](https://img.shields.io/badge/platform-Android%20%7C%20iOS%20%7C%20macOS%20%7C%20Windows%20%7C%20Linux-0a7ea4)](#平台支持)
 
 <table>
@@ -201,6 +201,9 @@ Edge Read Aloud 端点不会为 WAV（`riff-24khz-16bit-mono-pcm`）请求返回
 - Repository: [Moosphan/flutter_edge_tts](https://github.com/Moosphan/flutter_edge_tts)
 - Issue tracker: [GitHub Issues](https://github.com/Moosphan/flutter_edge_tts/issues)
 
-## License
+## 许可证
 
-[MIT](LICENSE)
+本包采用 [MIT 许可证](LICENSE)，但
+`lib/src/utils/edge_tts_utils.dart` 中的 Edge v2 鉴权实现是对
+[rany2/edge-tts](https://github.com/rany2/edge-tts) 的修改移植，采用
+[LGPL-3.0-or-later](LICENSES/LGPL-3.0.txt)。版权与源代码信息见 [NOTICE](NOTICE)。

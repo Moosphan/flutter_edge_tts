@@ -2,6 +2,8 @@ import 'package:flutter_edge_tts/flutter_edge_tts.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  const runLiveEdgeTests = bool.fromEnvironment('RUN_LIVE_EDGE_TTS_TEST');
+
   test(
     'synthesizes MP3 audio through the live Edge endpoint',
     () async {
@@ -22,6 +24,7 @@ void main() {
         ]),
       );
     },
+    skip: !runLiveEdgeTests,
     timeout: const Timeout(Duration(seconds: 30)),
   );
 }
