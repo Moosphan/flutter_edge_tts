@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- Raise the package Dart floor from `>=3.3.0 <4.0.0` to `>=3.10.0 <4.0.0`, because `audio_decode: ^1.3.5` requires Dart `^3.10.0`; do not raise the declared Flutter floor unless the build proves it necessary.
+- Raise the package SDK floors from Dart `>=3.3.0 <4.0.0` to `>=3.10.0 <4.0.0` and Flutter `>=3.19.0` to `>=3.38.0`, because `audio_decode` requires Dart `^3.10.0`, which is first shipped by the Flutter 3.38 line.
 - Add only `audio_decode: ^1.3.3`; do not use `glint_audio_pure`, FFmpeg, a platform channel, or Edge's `riff-*`/`raw-*` endpoint formats. Version 1.3.5 cannot resolve with this Flutter SDK because its `code_assets: ^2.0.0` dependency requires `hooks` versions incompatible with Flutter's pinned `meta: 1.17.0`; 1.3.3 uses compatible `code_assets: ^1.2.1` and preserves the required minimp3 implementation.
 - WAV output must be standard little-endian RIFF/WAVE, PCM format tag `1`, 16 bits/sample, and preserve the decoder-reported sample rate and channel count.
 - Expose only `synthesizeToWavFile` and `synthesizeSsmlToWavFile`; do not alter the behavior, signatures, or output bytes of existing `synthesize`, `synthesizeToFile`, `synthesizeSsml`, `synthesizeSsmlToFile`, or stream APIs.
@@ -56,11 +56,12 @@ Run: `flutter test test/flutter_edge_tts_test.dart`
 
 Expected: compilation failure referring to `package:audio_decode/audio_decode.dart`.
 
-- [ ] **Step 3: Update `pubspec.yaml` with `sdk: ">=3.10.0 <4.0.0"` and `audio_decode: ^1.3.3`, then run `flutter pub get`.**
+- [ ] **Step 3: Update `pubspec.yaml` with `sdk: ">=3.10.0 <4.0.0"`, `flutter: ">=3.38.0"`, and `audio_decode: ^1.3.3`, then run `flutter pub get`.**
 
 ```yaml
 environment:
   sdk: ">=3.10.0 <4.0.0"
+  flutter: ">=3.38.0"
 
 dependencies:
   audio_decode: ^1.3.3

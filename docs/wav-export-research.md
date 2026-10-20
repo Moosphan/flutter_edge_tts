@@ -17,18 +17,21 @@ WAV API 内部固定请求当前已验证可用的
 文件。这样 Edge 端点是否实现 WAV 不再影响导出功能；由于输入是 MP3，导出
 WAV 是“解码后的 PCM 容器”，**不会恢复 MP3 已丢失的音质**。
 
-首选实现是一个独立的、可审计许可证的 `minimp3` FFI/native-codec 层：
-`lieff/minimp3` 是单头文件、ISO conformance 测试通过的 MP3 解码器，README
-明确列出 MPEG-2 Layer 3 每帧 576 个采样，并以 CC0-1.0 发布。Dart 侧只负责
-编排、错误处理和 WAV 封装。若项目必须支持 Web，Web 继续保留 MP3/PCM API；
-WAV 转换层在 Web 端应返回明确的 `wav_conversion_unavailable`，或另行接入
-Web Audio/`AudioDecoder` 实现，不能把 `dart:ffi` 当成 Web 通用方案。
+实现采用可审计许可证的 `audio_decode` 1.3.3：它将 `minimp3` 通过 Dart native
+assets 编译并以 FFI 解码，Dart 侧只负责编排、错误处理和 WAV 封装。`minimp3`
+是单头文件、ISO conformance 测试通过的 MP3 解码器，README 明确列出 MPEG-2
+Layer 3 每帧 576 个采样，并以 CC0-1.0 发布。项目锁定 1.3.3 而不是 1.3.5，
+因为当前 Flutter SDK 的 `meta` 固定版本与后者的 `code_assets: ^2.0.0` 依赖不
+可解析；1.3.3 使用兼容的 `code_assets: ^1.2.1`，同时仍使用 `minimp3`。若项目
+必须支持 Web，Web 应继续保留 MP3/PCM API；WAV 转换层应返回明确的
+`wav_conversion_unavailable`，或另行接入 Web Audio 实现，不能把 `dart:ffi`
+当成 Web 通用方案。
 
 原生实现应使用 Dart 的 native-assets build hooks，而不是把预编译 `.so` /
 `.dylib` / `.dll` 人工放进包里。Dart 官方文档说明此机制可编译或下载 C/Rust
 native assets，并在构建时自动调用；但 build hooks 从 Dart 3.10 才开始提供，
-所以当前包的 `sdk: >=3.3.0` 约束必须在实现前升级，或改用传统 Flutter 插件的
-五平台构建脚本。[Dart Hooks / native assets](https://dart.dev/tools/hooks)
+所以当前包的 `sdk: >=3.3.0` 约束必须在实现前升级（同时将 Flutter 下限提高到
+搭载 Dart 3.10 的 3.38），或改用传统 Flutter 插件的五平台构建脚本。[Dart Hooks / native assets](https://dart.dev/tools/hooks)
 是这一兼容性结论的一手来源。
 
 ## 已确认的约束
@@ -64,7 +67,7 @@ PCM 数据长度超过 RIFF 32-bit chunk 上限时失败并提示暂不支持，
 | Edge 请求 `riff-24khz-16bit-mono-pcm`，直接保存 | 不可行（当前上游行为） | 理论上无损、实现最简单 | 当前请求正常结束但无音频字节，正是 Issue #2；不能作为实现方案。 |
 | Edge 请求 `raw-24khz-16bit-mono-pcm`，加 44 字节 WAV 头 | 暂不可行 | 若端点恢复 PCM，这是质量最佳、无需 MP3 解码的路径 | 当前 live 验证同样没有可依赖的 PCM 音频；应保留为未来能力探测，不应作为默认路径。 |
 | 纯 Dart MP3 解码器 | 暂不可行 | Web、移动端和桌面共用 Dart；无需 native 构建 | 当前可查的 `glint_audio_pure` 文档把范围写为 **MPEG-1 Layer III**，而 Edge 返回的 24 kHz MPEG-2 frame 需要 MPEG-2 支持；此前实验因此不能作为可靠实现。见 [`glint_audio_pure`](https://pub.dev/packages/glint_audio_pure) 及其 [API/范围说明](https://github.com/CrispStrobe/glint/blob/main/bindings/dart_pure/README.md)。除非上游明确加入 MPEG-2 并通过 Edge fixture，否则不应接入。 |
-| [`audio_decode`](https://pub.dev/packages/audio_decode)（现成 native-assets 包） | 技术上可行，但当前不能直接采用 | 已使用 `minimp3` 经 FFI 解码 MP3 为 PCM，不需要自己维护 C binding | 当前发布版要求 Dart `^3.10.0`，并引入 `hooks`、`code_assets` 和 C 工具链；与本包 `>=3.3.0` SDK 基线冲突，且需先在 Flutter 全平台验证构建和运行。可作为提高 SDK 下限后的原型/对照实现，不能作为零风险普通依赖。其 [pubspec 元数据](https://pub.dev/api/packages/audio_decode) 是版本、依赖和 SDK 约束的一手来源。 |
+| [`audio_decode`](https://pub.dev/packages/audio_decode)（现成 native-assets 包） | **已采用 1.3.3** | 已使用 `minimp3` 经 FFI 解码 MP3 为 PCM，不需要自己维护 C binding | 要求 Dart `^3.10.0`，并引入 `hooks`、`code_assets` 和 C 工具链，因此本包 SDK 下限已相应升级；1.3.5 与当前 Flutter 固定 `meta` 不可解析，故锁定兼容的 1.3.3。仍需在每个发布目标上验证原生构建。其 [pubspec 元数据](https://pub.dev/api/packages/audio_decode) 是版本、依赖和 SDK 约束的一手来源。 |
 | [`audio_decoder`](https://pub.dev/packages/audio_decoder)（Flutter 平台插件） | 可作为应用层备选，不推荐成为核心默认依赖 | 公共 API 提供 MP3 转 WAV，且可委托平台解码能力 | 依赖 Flutter 插件和各平台实现，当前版本要求 Dart `^3.10.8`；会让轻量网络 TTS 包承担平台二进制、构建和发布维护面。实现前仍须用真实 Edge MPEG-2 fixture 验证其输出元数据。 |
 | `minimp3` C 源码 + `dart:ffi`/native assets | **推荐（原生平台，前提是提高 Dart SDK 下限）** | 单一解码内核覆盖 MPEG-1/2 Layer III；小、快、CC0；可逐帧解码并直接产出 PCM | Native-assets hooks 需要 Dart 3.10；否则需用传统 Flutter 插件构建。Web 仍要条件导入并返回“不支持”或另有 Web 实现。官方项目：[README](https://github.com/lieff/minimp3/blob/master/README.md)、[许可证](https://github.com/lieff/minimp3/blob/master/LICENSE)、[Dart Hooks](https://dart.dev/tools/hooks)。 |
 | 各平台系统解码器 + Flutter platform channel | 可行但维护成本高 | 使用系统 MP3 解码器，不携带 C 源码；可利用 Android MediaCodec、Apple AVFoundation、Windows Media Foundation 等 | 需要 5 套平台实现和不同的采样/尾帧行为；Linux/Web 仍需额外方案。Flutter 官方说明平台通道按平台分别实现，见 [platform channels](https://docs.flutter.dev/platform-integration/platform-channels)。不适合当前轻量、纯 Dart 的包作为第一版。 |

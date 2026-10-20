@@ -23,7 +23,7 @@
 - Supports text synthesis to bytes, files, or stream events
 - Supports raw SSML synthesis
 - Supports optional sentence and word boundary metadata
-- Supports MP3, WebM, Ogg, and raw PCM output formats
+- Supports MP3, WebM, Ogg, and raw PCM output formats, plus local PCM16 WAV file export
 - As of 2026-06-03, the live endpoint returns 322 voices across 142 locales and 75 languages
 
 ## Platform support
@@ -112,6 +112,22 @@ final result = await tts.synthesizeToFile(
 );
 ```
 
+### Export a WAV file
+
+```dart
+final result = await tts.synthesizeToWavFile(
+  'Hello from Flutter.',
+  audioFilePath: '/tmp/edge.wav',
+  metadataFilePath: '/tmp/edge.json',
+);
+```
+
+`synthesizeToWavFile` and `synthesizeSsmlToWavFile` request the working
+24 kHz Edge MP3 format, decode it locally, then write a standard PCM16
+RIFF/WAVE file. The output preserves the decoder-reported sample rate and
+channel count; it is not a lossless recovery of the source before MP3
+compression.
+
 ### Stream synthesis events
 
 ```dart
@@ -177,7 +193,10 @@ The locale prefix identifies the primary locale of the voice. The package uses t
 
 The broader Microsoft Azure Speech ecosystem includes voice families such as `Neural`, `MultilingualNeural`, `Neural HD`, and `MAI-Voice-1`. This package is implemented around the Edge Read Aloud style transport path rather than the full Azure Speech SDK surface, so standard neural voices are the safest default choice. Advanced Azure-only voice families should be validated in your own environment before being exposed as supported options.
 
-The Edge Read Aloud endpoint does not return bytes for WAV (`riff-24khz-16bit-mono-pcm`) requests. Use raw PCM or a container format such as MP3, WebM, or Ogg instead.
+The Edge Read Aloud endpoint does not return bytes for direct WAV
+(`riff-24khz-16bit-mono-pcm`) requests. Do not use that output format. Use the
+local WAV file APIs above, raw PCM, or a container format such as MP3, WebM,
+or Ogg instead.
 
 For production integrations, prefer voices returned by `getVoices()` over hard-coded assumptions.
 

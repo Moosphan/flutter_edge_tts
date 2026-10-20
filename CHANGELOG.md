@@ -1,10 +1,13 @@
 ## Unreleased
 
-* Added the native MP3 decoder dependency required for WAV export.
-* Raised the minimum supported Dart SDK to 3.10.0 for native-assets support.
+* Added `synthesizeToWavFile` and `synthesizeSsmlToWavFile`, which locally
+  decode Edge MP3 output to PCM16 RIFF/WAVE files.
+* Added the native MP3 decoder dependency required for local WAV export.
+* Raised the minimum supported SDKs to Dart 3.10.0 and Flutter 3.38.0 for
+  native-assets support.
 * Restored compatibility with Edge's v2 Sec-MS-GEC authentication protocol.
-* Marked WAV output as unsupported because the upstream endpoint completes WAV
-  requests without returning audio; use raw PCM, MP3, WebM, or Ogg instead.
+* Kept direct Edge WAV output unsupported because the upstream endpoint
+  completes WAV requests without returning audio.
 
 ## 0.0.2
 

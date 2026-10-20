@@ -20,8 +20,23 @@ void main() {
     final tts = FlutterEdgeTts(voice: 'en-US-AriaNeural');
     addTearDown(tts.close);
 
-    expect(tts.synthesizeToWavFile, isA<Function>());
-    expect(tts.synthesizeSsmlToWavFile, isA<Function>());
+    final Future<EdgeTtsFileResult> Function(
+      String, {
+      required String audioFilePath,
+      String? metadataFilePath,
+      EdgeTtsProsody prosody,
+      EdgeTtsConfig? config,
+      bool escapeText,
+    }) synthesizeToWavFile = tts.synthesizeToWavFile;
+    final Future<EdgeTtsFileResult> Function(
+      String, {
+      required String audioFilePath,
+      String? metadataFilePath,
+      EdgeTtsConfig? config,
+    }) synthesizeSsmlToWavFile = tts.synthesizeSsmlToWavFile;
+
+    expect(synthesizeToWavFile, isA<Function>());
+    expect(synthesizeSsmlToWavFile, isA<Function>());
   });
 
   group('EdgeTtsSsmlBuilder', () {
