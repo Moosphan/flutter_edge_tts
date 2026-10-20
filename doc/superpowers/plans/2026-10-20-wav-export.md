@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - Raise the package SDK floors from Dart `>=3.3.0 <4.0.0` to `>=3.10.0 <4.0.0` and Flutter `>=3.19.0` to `>=3.38.0`, because `audio_decode` requires Dart `^3.10.0`, which is first shipped by the Flutter 3.38 line.
-- Add only `audio_decode: ^1.3.3`; do not use `glint_audio_pure`, FFmpeg, a platform channel, or Edge's `riff-*`/`raw-*` endpoint formats. Version 1.3.5 cannot resolve with this Flutter SDK because its `code_assets: ^2.0.0` dependency requires `hooks` versions incompatible with Flutter's pinned `meta: 1.17.0`; 1.3.3 uses compatible `code_assets: ^1.2.1` and preserves the required minimp3 implementation.
+- Add only `audio_decode: ^1.3.3`; do not use `glint_audio_pure`, FFmpeg, a platform channel, or Edge's `riff-*`/`raw-*` endpoint formats. At the tested SDK resolution this selects 1.3.3 (which uses compatible `code_assets: ^1.2.1` and preserves the required minimp3 implementation); version 1.3.5 cannot resolve with this Flutter SDK because its `code_assets: ^2.0.0` dependency requires `hooks` versions incompatible with Flutter's pinned `meta: 1.17.0`.
 - WAV output must be standard little-endian RIFF/WAVE, PCM format tag `1`, 16 bits/sample, and preserve the decoder-reported sample rate and channel count.
 - Expose only `synthesizeToWavFile` and `synthesizeSsmlToWavFile`; do not alter the behavior, signatures, or output bytes of existing `synthesize`, `synthesizeToFile`, `synthesizeSsml`, `synthesizeSsmlToFile`, or stream APIs.
 - Force only the WAV export request to `EdgeTtsOutputFormat.audio24Khz96KbitrateMonoMp3`; retain the caller's voice and metadata configuration.
@@ -201,7 +201,7 @@ git commit -m "feat: export Edge synthesis as WAV files"
 **Files:**
 - Modify: `README.md`
 - Modify: `README.zh-CN.md`
-- Modify: `docs/wav-export-research.md`
+- Modify: `doc/wav-export-research.md`
 
 **Interfaces:**
 - Consumes: the final public WAV methods and documented SDK floor.
@@ -232,6 +232,6 @@ Expected: all commands exit 0. The live test and macOS build validate real nativ
 - [ ] **Step 4: Commit.**
 
 ```bash
-git add README.md README.zh-CN.md docs/wav-export-research.md
+git add README.md README.zh-CN.md doc/wav-export-research.md
 git commit -m "docs: document local WAV export"
 ```

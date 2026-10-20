@@ -19,11 +19,11 @@ class EdgeTtsWavEncoder {
     final channels = audio.channels;
     final sampleCount = audio.samples.length;
 
-    if (sampleRate < 1 || channels < 1 || channels > 0xFFFF) {
+    if (sampleRate < 1 || channels < 1 || channels > 2) {
       throw const EdgeTtsException(
         'invalid_wav_pcm',
-        'Decoded PCM must have a positive sample rate and between 1 and '
-            '65535 channels.',
+        'Decoded PCM must have a positive sample rate and one or two '
+            'channels.',
       );
     }
     if (sampleCount == 0) {

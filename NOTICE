@@ -15,3 +15,17 @@ Copyright (C) 2025 rany <rany@riseup.net>
 That portion is available under the GNU Lesser General Public License,
 version 3 or (at your option) any later version. Its source is included in
 this repository and the license text is in LICENSES/LGPL-3.0.txt.
+
+The optional local WAV export path uses audio_decode 1.3.3:
+
+  https://pub.dev/packages/audio_decode/versions/1.3.3
+
+Copyright (c) 2026 Yusuf Ihsan Gorgel
+
+audio_decode is MIT licensed. Its MP3 decoder is lieff/minimp3, released
+under CC0-1.0:
+
+  https://github.com/lieff/minimp3
+
+The pinned pub archive SHA-256 for audio_decode 1.3.3 is
+c4bb933925cddb24e215002c67f2bac31376e3d7a7e354a2cb65bbe6dce0268e.

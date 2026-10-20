@@ -53,6 +53,25 @@ void main() {
     );
   });
 
+  test('rejects unsupported channel counts', () {
+    expect(
+      () => EdgeTtsWavEncoder.encodePcm16(
+        PcmAudio(
+          sampleRate: 24000,
+          channels: 3,
+          samples: Int16List.fromList(<int>[0, 0, 0]),
+        ),
+      ),
+      throwsA(
+        isA<EdgeTtsException>().having(
+          (error) => error.code,
+          'code',
+          'invalid_wav_pcm',
+        ),
+      ),
+    );
+  });
+
   test('rejects empty decoded audio', () {
     expect(
       () => EdgeTtsWavEncoder.encodePcm16(

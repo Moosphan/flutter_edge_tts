@@ -17,8 +17,9 @@ WAV API 内部固定请求当前已验证可用的
 文件。这样 Edge 端点是否实现 WAV 不再影响导出功能；由于输入是 MP3，导出
 WAV 是“解码后的 PCM 容器”，**不会恢复 MP3 已丢失的音质**。
 
-实现采用可审计许可证的 `audio_decode` 1.3.3：它将 `minimp3` 通过 Dart native
-assets 编译并以 FFI 解码，Dart 侧只负责编排、错误处理和 WAV 封装。`minimp3`
+实现采用可审计许可证的 `audio_decode` `^1.3.3`：它将 `minimp3` 通过 Dart native
+assets 编译并以 FFI 解码，Dart 侧只负责编排、错误处理和 WAV 封装。当前锁文件解析
+并验证的是 1.3.3；`minimp3`
 是单头文件、ISO conformance 测试通过的 MP3 解码器，README 明确列出 MPEG-2
 Layer 3 每帧 576 个采样，并以 CC0-1.0 发布。项目锁定 1.3.3 而不是 1.3.5，
 因为当前 Flutter SDK 的 `meta` 固定版本与后者的 `code_assets: ^2.0.0` 依赖不
@@ -39,7 +40,7 @@ native assets，并在构建时自动调用；但 build hooks 从 Dart 3.10 才�
 ### Edge 端点
 
 仓库当前的实测回归测试只把 MP3 音频头（ID3 或 MPEG frame）作为在线成功条件：
-[`test/live_synthesis_test.dart`](../test/live_synthesis_test.dart)。Issue #2
+[`test/live_synthesis_test.dart`](../../test/live_synthesis_test.dart)。Issue #2
 记录了请求 WAV 后得到 `empty_audio`：
 [#2 输出音频格式不支持 wav？](https://github.com/Moosphan/flutter_edge_tts/issues/2)。
 当前实现因此对 `riff-24khz-16bit-mono-pcm` 提前抛出
