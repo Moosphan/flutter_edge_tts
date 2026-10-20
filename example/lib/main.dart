@@ -202,7 +202,7 @@ class _EdgeTtsExamplePageState extends State<EdgeTtsExamplePage> {
       case EdgeTtsOutputFormat.raw24Khz16BitMonoPcm:
         return 'PCM 24kHz / 16-bit';
       case EdgeTtsOutputFormat.riff24Khz16BitMonoPcm:
-        return 'WAV 24kHz / 16-bit';
+        return 'WAV 24kHz / 16-bit (local conversion)';
       case EdgeTtsOutputFormat.webm24Khz16BitMonoOpus:
         return 'WebM 24kHz / Opus';
       case EdgeTtsOutputFormat.ogg24Khz16BitMonoOpus:
@@ -315,7 +315,8 @@ class _EdgeTtsExamplePageState extends State<EdgeTtsExamplePage> {
 
     if (!_hasVoices) {
       setState(() {
-        _status = 'Voices are unavailable. Retry loading the live catalog first.';
+        _status =
+            'Voices are unavailable. Retry loading the live catalog first.';
       });
       return;
     }
@@ -347,12 +348,20 @@ class _EdgeTtsExamplePageState extends State<EdgeTtsExamplePage> {
           '${directory.path}/edge_tts_sample.${_selectedFormat.fileExtension}';
       final metadataPath = '${directory.path}/edge_tts_sample.json';
 
-      final result = await _edgeTts.synthesizeToFile(
-        _textController.text,
-        audioFilePath: audioPath,
-        metadataFilePath: metadataPath,
-        prosody: _buildProsody(),
-      );
+      final result =
+          _selectedFormat == EdgeTtsOutputFormat.riff24Khz16BitMonoPcm
+              ? await _edgeTts.synthesizeToWavFile(
+                  _textController.text,
+                  audioFilePath: audioPath,
+                  metadataFilePath: metadataPath,
+                  prosody: _buildProsody(),
+                )
+              : await _edgeTts.synthesizeToFile(
+                  _textController.text,
+                  audioFilePath: audioPath,
+                  metadataFilePath: metadataPath,
+                  prosody: _buildProsody(),
+                );
 
       setState(() {
         _audioPath = result.audioFilePath;
@@ -915,9 +924,8 @@ class _EdgeTtsExamplePageState extends State<EdgeTtsExamplePage> {
 
   Widget _buildPrimaryButton(BuildContext context, {required bool mobile}) {
     final button = FilledButton.icon(
-      onPressed: _synthesizing || _loadingVoices || !_hasVoices
-          ? null
-          : _synthesize,
+      onPressed:
+          _synthesizing || _loadingVoices || !_hasVoices ? null : _synthesize,
       style: FilledButton.styleFrom(
         minimumSize: Size(double.infinity, mobile ? 56 : 64),
         backgroundColor: const Color(0xFF7C3AED),
@@ -1003,7 +1011,9 @@ class _EdgeTtsExamplePageState extends State<EdgeTtsExamplePage> {
                     ? _resumeAudio
                     : (_canPlayAudio ? () => _playAudio() : null),
                 icon: Icon(
-                  _isPaused ? Icons.play_arrow_rounded : Icons.volume_up_rounded,
+                  _isPaused
+                      ? Icons.play_arrow_rounded
+                      : Icons.volume_up_rounded,
                 ),
                 label: Text(_isPaused ? 'Resume' : 'Play'),
               ),
