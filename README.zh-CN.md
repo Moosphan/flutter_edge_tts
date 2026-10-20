@@ -112,6 +112,17 @@ final result = await tts.synthesizeToFile(
 );
 ```
 
+### 导出 WAV 文件
+
+```dart
+final result = await tts.synthesizeToWavFile(
+  'Hello from Flutter.',
+  audioFilePath: '/tmp/edge.wav',
+);
+```
+
+Edge 端点不直接生成 WAV。该方法会请求 MP3，在本地解码并使用解码后的采样率和声道数写为标准 PCM WAV 文件。转换过程在本地完成，但源音频仍是有损 MP3。
+
 ### 流式事件合成
 
 ```dart
@@ -177,7 +188,7 @@ tts.updateConfig(
 
 更广的 Microsoft Azure Speech 生态中还存在 `Neural`、`MultilingualNeural`、`Neural HD`、`MAI-Voice-1` 等音色家族。当前包围绕 Edge Read Aloud 风格的传输链路实现，而不是完整 Azure Speech SDK 封装，因此标准 `Neural` 音色是最稳妥的默认选择。更偏 Azure 专有能力的高级音色，建议先在你的环境中验证，再作为正式支持项开放。
 
-Edge Read Aloud 端点不会为 WAV（`riff-24khz-16bit-mono-pcm`）请求返回音频字节；请改用原始 PCM，或 MP3、WebM、Ogg 等容器格式。
+Edge Read Aloud 端点不会为 WAV（`riff-24khz-16bit-mono-pcm`）请求返回音频字节；请使用[本地 WAV 导出方法](#导出-wav-文件)、原始 PCM，或 MP3、WebM、Ogg 等容器格式。
 
 在实际接入中，优先使用 `getVoices()` 的动态返回结果，而不是完全依赖手工硬编码。
 
