@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
+import 'package:glint_audio_pure/glint_audio_pure.dart' show mp3Decode;
 
 import 'models/edge_tts_config.dart';
 import 'models/edge_tts_exception.dart';
@@ -16,6 +17,7 @@ import 'models/edge_tts_synthesis_result.dart';
 import 'models/edge_tts_voice.dart';
 import 'ssml/edge_tts_ssml_builder.dart';
 import 'utils/edge_tts_utils.dart';
+import 'utils/edge_tts_wav_encoder.dart';
 
 class FlutterEdgeTts {
   FlutterEdgeTts({
@@ -266,6 +268,32 @@ class FlutterEdgeTts {
     );
   }
 
+  /// Synthesizes text to a standard 16-bit PCM WAV file.
+  ///
+  /// Edge's Read Aloud websocket does not produce WAV containers directly.
+  /// This method requests MP3, decodes it locally, and writes a WAV container.
+  Future<EdgeTtsFileResult> synthesizeToWavFile(
+    String text, {
+    required String audioFilePath,
+    String? metadataFilePath,
+    EdgeTtsProsody prosody = const EdgeTtsProsody(),
+    EdgeTtsConfig? config,
+    bool escapeText = true,
+  }) async {
+    final ssml = EdgeTtsSsmlBuilder.build(
+      text: text,
+      config: config ?? _config,
+      prosody: prosody,
+      escapeText: escapeText,
+    );
+    return synthesizeSsmlToWavFile(
+      ssml,
+      audioFilePath: audioFilePath,
+      metadataFilePath: metadataFilePath,
+      config: config,
+    );
+  }
+
   Future<EdgeTtsSynthesisResult> synthesizeSsml(
     String ssml, {
     EdgeTtsConfig? config,
@@ -304,6 +332,61 @@ class FlutterEdgeTts {
     EdgeTtsConfig? config,
   }) async {
     final result = await synthesizeSsml(ssml, config: config);
+    return _writeSynthesisResultToFile(
+      result,
+      audioFilePath: audioFilePath,
+      metadataFilePath: metadataFilePath,
+    );
+  }
+
+  /// Synthesizes SSML to a standard 16-bit PCM WAV file.
+  ///
+  /// The supplied [config] retains its voice and metadata settings, while the
+  /// Edge request always uses MP3, which is decoded and wrapped locally.
+  Future<EdgeTtsFileResult> synthesizeSsmlToWavFile(
+    String ssml, {
+    required String audioFilePath,
+    String? metadataFilePath,
+    EdgeTtsConfig? config,
+  }) async {
+    final mp3Config = (config ?? _config).copyWith(
+      outputFormat: EdgeTtsOutputFormat.audio24Khz96KbitrateMonoMp3,
+    );
+    final mp3Result = await synthesizeSsml(ssml, config: mp3Config);
+    final decoded = mp3Decode(mp3Result.audioBytes);
+    final pcmBytes = _floatSamplesToPcm16(decoded.samples);
+    final result = EdgeTtsSynthesisResult(
+      audioBytes: EdgeTtsWavEncoder.wrapPcm16(
+        pcmBytes,
+        sampleRate: decoded.sampleRate,
+        channels: decoded.channels,
+      ),
+      metadata: mp3Result.metadata,
+      requestId: mp3Result.requestId,
+    );
+    return _writeSynthesisResultToFile(
+      result,
+      audioFilePath: audioFilePath,
+      metadataFilePath: metadataFilePath,
+    );
+  }
+
+  Uint8List _floatSamplesToPcm16(Float64List samples) {
+    final pcm = Uint8List(samples.length * 2);
+    final bytes = ByteData.sublistView(pcm);
+    for (var index = 0; index < samples.length; index++) {
+      final sample = samples[index].clamp(-1.0, 1.0);
+      final value = sample < 0 ? sample * 32768 : sample * 32767;
+      bytes.setInt16(index * 2, value.round(), Endian.little);
+    }
+    return pcm;
+  }
+
+  Future<EdgeTtsFileResult> _writeSynthesisResultToFile(
+    EdgeTtsSynthesisResult result, {
+    required String audioFilePath,
+    String? metadataFilePath,
+  }) async {
     final audioFile = File(audioFilePath);
     await audioFile.parent.create(recursive: true);
     await audioFile.writeAsBytes(result.audioBytes, flush: true);

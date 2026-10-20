@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:flutter_edge_tts/flutter_edge_tts.dart';
 import 'package:flutter_edge_tts/src/utils/edge_tts_utils.dart';
+import 'package:flutter_edge_tts/src/utils/edge_tts_wav_encoder.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -42,6 +45,29 @@ void main() {
         '2CD23A2CA0B2595A-'
         'F3C846C370E05F9CC83ACC5F995C5F5D87A4D0F14CE8936A0F902E64099E38A2',
       );
+    });
+  });
+
+  group('EdgeTtsWavEncoder', () {
+    test('wraps 24 kHz 16-bit mono PCM in a WAV container', () {
+      final wav = EdgeTtsWavEncoder.wrap24Khz16BitMono(
+        Uint8List.fromList(<int>[1, 2, 3, 4]),
+      );
+      final header = ByteData.sublistView(wav);
+
+      expect(wav.sublist(0, 4), <int>[82, 73, 70, 70]);
+      expect(wav.sublist(8, 12), <int>[87, 65, 86, 69]);
+      expect(wav.sublist(12, 16), <int>[102, 109, 116, 32]);
+      expect(header.getUint32(4, Endian.little), 40);
+      expect(header.getUint16(20, Endian.little), 1);
+      expect(header.getUint16(22, Endian.little), 1);
+      expect(header.getUint32(24, Endian.little), 24000);
+      expect(header.getUint32(28, Endian.little), 48000);
+      expect(header.getUint16(32, Endian.little), 2);
+      expect(header.getUint16(34, Endian.little), 16);
+      expect(wav.sublist(36, 40), <int>[100, 97, 116, 97]);
+      expect(header.getUint32(40, Endian.little), 4);
+      expect(wav.sublist(44), <int>[1, 2, 3, 4]);
     });
   });
 
