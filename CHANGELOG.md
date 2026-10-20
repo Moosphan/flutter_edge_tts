@@ -3,9 +3,6 @@
 * Restored compatibility with Edge's v2 Sec-MS-GEC authentication protocol.
 * Marked WAV output as unsupported because the upstream endpoint completes WAV
   requests without returning audio; use raw PCM, MP3, WebM, or Ogg instead.
-* Added `synthesizeToWavFile` and `synthesizeSsmlToWavFile` to export local
-  PCM WAV files by decoding Edge MP3 output locally. Existing synthesis and
-  streaming APIs are unchanged.
 
 ## 0.0.2
 

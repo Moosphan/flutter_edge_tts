@@ -183,14 +183,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  glint_audio_pure:
-    dependency: transitive
-    description:
-      name: glint_audio_pure
-      sha256: "8ea3a95375ef8a3e5ad9100432973ccd0a2331e1d458aff09724a1dc1040d95f"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.6.2"
   hooks:
     dependency: transitive
     description:

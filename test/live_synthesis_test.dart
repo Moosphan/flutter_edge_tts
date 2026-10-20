@@ -1,6 +1,3 @@
-import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:flutter_edge_tts/flutter_edge_tts.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -26,35 +23,6 @@ void main() {
           <int>[255, 243, 164]
         ]),
       );
-    },
-    skip: !runLiveEdgeTests,
-    timeout: const Timeout(Duration(seconds: 30)),
-  );
-
-  test(
-    'exports a locally-decoded WAV file from live Edge MP3 audio',
-    () async {
-      final directory = await Directory.systemTemp.createTemp('edge_tts_wav_');
-      addTearDown(() => directory.delete(recursive: true));
-      final outputFile = File('${directory.path}/speech.wav');
-      final tts = FlutterEdgeTts(voice: 'en-US-AriaNeural');
-      addTearDown(tts.close);
-
-      final result = await tts.synthesizeToWavFile(
-        'Flutter Edge TTS WAV regression test.',
-        audioFilePath: outputFile.path,
-      );
-      final wavBytes = await outputFile.readAsBytes();
-
-      expect(result.audioFilePath, outputFile.path);
-      expect(wavBytes.length, greaterThan(44));
-      expect(wavBytes.take(4), <int>[82, 73, 70, 70]);
-      expect(wavBytes.skip(8).take(4), <int>[87, 65, 86, 69]);
-      expect(wavBytes.skip(36).take(4), <int>[100, 97, 116, 97]);
-      final header = ByteData.sublistView(wavBytes);
-      expect(header.getUint16(22, Endian.little), anyOf(1, 2));
-      expect(header.getUint32(24, Endian.little), greaterThan(0));
-      expect(header.getUint16(34, Endian.little), 16);
     },
     skip: !runLiveEdgeTests,
     timeout: const Timeout(Duration(seconds: 30)),
