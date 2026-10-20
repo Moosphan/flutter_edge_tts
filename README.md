@@ -112,20 +112,6 @@ final result = await tts.synthesizeToFile(
 );
 ```
 
-### Export a WAV file
-
-```dart
-final result = await tts.synthesizeToWavFile(
-  'Hello from Flutter.',
-  audioFilePath: '/tmp/edge.wav',
-);
-```
-
-The Edge endpoint does not generate WAV directly. This method requests MP3,
-decodes it locally, and writes a standard PCM WAV file using the decoded sample
-rate and channel count. The conversion is local; the source audio remains lossy
-MP3.
-
 ### Stream synthesis events
 
 ```dart
@@ -191,10 +177,7 @@ The locale prefix identifies the primary locale of the voice. The package uses t
 
 The broader Microsoft Azure Speech ecosystem includes voice families such as `Neural`, `MultilingualNeural`, `Neural HD`, and `MAI-Voice-1`. This package is implemented around the Edge Read Aloud style transport path rather than the full Azure Speech SDK surface, so standard neural voices are the safest default choice. Advanced Azure-only voice families should be validated in your own environment before being exposed as supported options.
 
-The Edge Read Aloud endpoint does not return bytes for WAV
-(`riff-24khz-16bit-mono-pcm`) requests. Use [the local WAV export
-method](#export-a-wav-file), raw PCM, or a container format such as MP3, WebM,
-or Ogg instead.
+The Edge Read Aloud endpoint does not return bytes for WAV (`riff-24khz-16bit-mono-pcm`) requests. Use raw PCM or a container format such as MP3, WebM, or Ogg instead.
 
 For production integrations, prefer voices returned by `getVoices()` over hard-coded assumptions.
 
