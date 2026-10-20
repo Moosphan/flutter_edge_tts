@@ -1,8 +1,21 @@
+import 'dart:typed_data';
+
+import 'package:audio_decode/audio_decode.dart';
 import 'package:flutter_edge_tts/flutter_edge_tts.dart';
 import 'package:flutter_edge_tts/src/utils/edge_tts_utils.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('decoder dependency provides PCM audio geometry', () {
+    final pcm = PcmAudio(
+      sampleRate: 24000,
+      channels: 1,
+      samples: Int16List.fromList(<int>[0, 1]),
+    );
+
+    expect(pcm.frameCount, 2);
+  });
+
   group('EdgeTtsSsmlBuilder', () {
     test('builds SSML with inferred locale and escaped text', () {
       const config = EdgeTtsConfig(voice: 'en-US-AriaNeural');

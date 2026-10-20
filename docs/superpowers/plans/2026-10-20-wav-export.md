@@ -6,12 +6,12 @@
 
 **Architecture:** The two new file APIs force the existing WebSocket request path to `audio-24khz-96kbitrate-mono-mp3`, decode the completed response through `audio_decode`/minimp3, then pass the resulting PCM16 samples to a small pure-Dart RIFF writer. Existing APIs, stream events, output-format semantics, and the deterministic rejection of Edge's unavailable `riff-*` format remain unchanged. File and metadata writes share one atomic helper so failed conversion cannot overwrite a valid target.
 
-**Tech Stack:** Flutter/Dart, `audio_decode` 1.3.5 native assets (minimp3), `flutter_test`, `dart:io`.
+**Tech Stack:** Flutter/Dart, `audio_decode` 1.3.3 native assets (minimp3), `flutter_test`, `dart:io`.
 
 ## Global Constraints
 
 - Raise the package Dart floor from `>=3.3.0 <4.0.0` to `>=3.10.0 <4.0.0`, because `audio_decode: ^1.3.5` requires Dart `^3.10.0`; do not raise the declared Flutter floor unless the build proves it necessary.
-- Add only `audio_decode: ^1.3.5`; do not use `glint_audio_pure`, FFmpeg, a platform channel, or Edge's `riff-*`/`raw-*` endpoint formats.
+- Add only `audio_decode: ^1.3.3`; do not use `glint_audio_pure`, FFmpeg, a platform channel, or Edge's `riff-*`/`raw-*` endpoint formats. Version 1.3.5 cannot resolve with this Flutter SDK because its `code_assets: ^2.0.0` dependency requires `hooks` versions incompatible with Flutter's pinned `meta: 1.17.0`; 1.3.3 uses compatible `code_assets: ^1.2.1` and preserves the required minimp3 implementation.
 - WAV output must be standard little-endian RIFF/WAVE, PCM format tag `1`, 16 bits/sample, and preserve the decoder-reported sample rate and channel count.
 - Expose only `synthesizeToWavFile` and `synthesizeSsmlToWavFile`; do not alter the behavior, signatures, or output bytes of existing `synthesize`, `synthesizeToFile`, `synthesizeSsml`, `synthesizeSsmlToFile`, or stream APIs.
 - Force only the WAV export request to `EdgeTtsOutputFormat.audio24Khz96KbitrateMonoMp3`; retain the caller's voice and metadata configuration.
@@ -30,7 +30,7 @@
 - Test: `test/flutter_edge_tts_test.dart`
 
 **Interfaces:**
-- Consumes: `audio_decode: ^1.3.5` exposes `PcmAudio`, `decodeMp3`, and `encodeWav`.
+- Consumes: `audio_decode: ^1.3.3` exposes `PcmAudio`, `decodeMp3`, and `encodeWav`.
 - Produces: a package baseline whose Dart constraint is compatible with the native-assets decoder.
 
 - [ ] **Step 1: Add a failing compilation-level test that imports `audio_decode` and constructs a mono 24 kHz `PcmAudio`.**
@@ -56,14 +56,14 @@ Run: `flutter test test/flutter_edge_tts_test.dart`
 
 Expected: compilation failure referring to `package:audio_decode/audio_decode.dart`.
 
-- [ ] **Step 3: Update `pubspec.yaml` with `sdk: ">=3.10.0 <4.0.0"` and `audio_decode: ^1.3.5`, then run `flutter pub get`.**
+- [ ] **Step 3: Update `pubspec.yaml` with `sdk: ">=3.10.0 <4.0.0"` and `audio_decode: ^1.3.3`, then run `flutter pub get`.**
 
 ```yaml
 environment:
   sdk: ">=3.10.0 <4.0.0"
 
 dependencies:
-  audio_decode: ^1.3.5
+  audio_decode: ^1.3.3
 ```
 
 - [ ] **Step 4: Run the focused test and verify it passes, then record the new feature and Dart floor in `CHANGELOG.md`.**

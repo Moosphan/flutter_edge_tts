@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Added the native MP3 decoder dependency required for WAV export.
+* Raised the minimum supported Dart SDK to 3.10.0 for native-assets support.
 * Restored compatibility with Edge's v2 Sec-MS-GEC authentication protocol.
 * Marked WAV output as unsupported because the upstream endpoint completes WAV
   requests without returning audio; use raw PCM, MP3, WebM, or Ogg instead.
