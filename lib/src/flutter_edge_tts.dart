@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:audio_decode/audio_decode.dart';
 import 'package:http/http.dart' as http;
 
 import 'models/edge_tts_config.dart';
@@ -16,6 +17,7 @@ import 'models/edge_tts_synthesis_result.dart';
 import 'models/edge_tts_voice.dart';
 import 'ssml/edge_tts_ssml_builder.dart';
 import 'utils/edge_tts_utils.dart';
+import 'utils/edge_tts_wav_encoder.dart';
 
 class FlutterEdgeTts {
   FlutterEdgeTts({
@@ -266,6 +268,33 @@ class FlutterEdgeTts {
     );
   }
 
+  /// Synthesizes [text] and writes the result as a standard PCM16 WAV file.
+  ///
+  /// Edge does not return WAV bytes for its `riff-*` output format. This
+  /// method requests its working 24 kHz MP3 response, decodes it locally, and
+  /// writes the decoded samples to a RIFF/WAVE container instead.
+  Future<EdgeTtsFileResult> synthesizeToWavFile(
+    String text, {
+    required String audioFilePath,
+    String? metadataFilePath,
+    EdgeTtsProsody prosody = const EdgeTtsProsody(),
+    EdgeTtsConfig? config,
+    bool escapeText = true,
+  }) async {
+    final ssml = EdgeTtsSsmlBuilder.build(
+      text: text,
+      config: config ?? _config,
+      prosody: prosody,
+      escapeText: escapeText,
+    );
+    return synthesizeSsmlToWavFile(
+      ssml,
+      audioFilePath: audioFilePath,
+      metadataFilePath: metadataFilePath,
+      config: config,
+    );
+  }
+
   Future<EdgeTtsSynthesisResult> synthesizeSsml(
     String ssml, {
     EdgeTtsConfig? config,
@@ -304,28 +333,103 @@ class FlutterEdgeTts {
     EdgeTtsConfig? config,
   }) async {
     final result = await synthesizeSsml(ssml, config: config);
-    final audioFile = File(audioFilePath);
-    await audioFile.parent.create(recursive: true);
-    await audioFile.writeAsBytes(result.audioBytes, flush: true);
-
-    String? savedMetadataPath;
-    if (metadataFilePath != null && result.metadata.isNotEmpty) {
-      final metadataFile = File(metadataFilePath);
-      await metadataFile.parent.create(recursive: true);
-      final metadata = EdgeTtsMetadata(items: result.metadata);
-      await metadataFile.writeAsString(
-        const JsonEncoder.withIndent('  ').convert(metadata.toJson()),
-        flush: true,
-      );
-      savedMetadataPath = metadataFile.path;
-    }
-
-    return EdgeTtsFileResult(
-      audioFilePath: audioFile.path,
-      metadataFilePath: savedMetadataPath,
-      result: result,
+    return _writeSynthesisResultToFile(
+      result,
+      audioFilePath: audioFilePath,
+      metadataFilePath: metadataFilePath,
     );
   }
+
+  /// Synthesizes [ssml] and writes the locally decoded PCM16 as a WAV file.
+  ///
+  /// The caller's voice and metadata options are retained; only the Edge
+  /// output format is changed to the stable MP3 transport format.
+  Future<EdgeTtsFileResult> synthesizeSsmlToWavFile(
+    String ssml, {
+    required String audioFilePath,
+    String? metadataFilePath,
+    EdgeTtsConfig? config,
+  }) async {
+    final mp3Config = (config ?? _config).copyWith(
+      outputFormat: EdgeTtsOutputFormat.audio24Khz96KbitrateMonoMp3,
+    );
+    final mp3Result = await synthesizeSsml(ssml, config: mp3Config);
+    final wavResult = EdgeTtsSynthesisResult(
+      audioBytes: _decodeMp3AsWav(mp3Result.audioBytes),
+      metadata: mp3Result.metadata,
+      requestId: mp3Result.requestId,
+    );
+    return _writeSynthesisResultToFile(
+      wavResult,
+      audioFilePath: audioFilePath,
+      metadataFilePath: metadataFilePath,
+    );
+  }
+
+  Uint8List _decodeMp3AsWav(Uint8List mp3Bytes) {
+    try {
+      return EdgeTtsWavEncoder.encodePcm16(decodeMp3(mp3Bytes));
+    } on EdgeTtsException {
+      rethrow;
+    } on Object catch (error) {
+      throw EdgeTtsException(
+        'wav_decode_failed',
+        'Failed to decode Edge MP3 audio for WAV export.',
+        cause: error,
+      );
+    }
+  }
+
+  Future<EdgeTtsFileResult> _writeSynthesisResultToFile(
+    EdgeTtsSynthesisResult result, {
+    required String audioFilePath,
+    String? metadataFilePath,
+  }) async {
+    final audioFile = File(audioFilePath);
+    await audioFile.parent.create(recursive: true);
+    final audioTemporaryFile = _temporarySibling(audioFile, result.requestId);
+    File? metadataFile;
+    File? metadataTemporaryFile;
+    try {
+      await audioTemporaryFile.writeAsBytes(result.audioBytes, flush: true);
+
+      if (metadataFilePath != null && result.metadata.isNotEmpty) {
+        metadataFile = File(metadataFilePath);
+        await metadataFile.parent.create(recursive: true);
+        metadataTemporaryFile = _temporarySibling(
+          metadataFile,
+          result.requestId,
+        );
+        final metadata = EdgeTtsMetadata(items: result.metadata);
+        await metadataTemporaryFile.writeAsString(
+          const JsonEncoder.withIndent('  ').convert(metadata.toJson()),
+          flush: true,
+        );
+      }
+
+      await audioTemporaryFile.rename(audioFile.path);
+      if (metadataFile != null && metadataTemporaryFile != null) {
+        await metadataTemporaryFile.rename(metadataFile.path);
+      }
+
+      return EdgeTtsFileResult(
+        audioFilePath: audioFile.path,
+        metadataFilePath: metadataFile?.path,
+        result: result,
+      );
+    } finally {
+      if (await audioTemporaryFile.exists()) {
+        await audioTemporaryFile.delete();
+      }
+      if (metadataTemporaryFile != null &&
+          await metadataTemporaryFile.exists()) {
+        await metadataTemporaryFile.delete();
+      }
+    }
+  }
+
+  File _temporarySibling(File destination, String requestId) =>
+      File('${destination.path}.tmp.$requestId');
 
   Future<void> close() async {
     for (final socket in List<WebSocket>.from(_activeSockets)) {

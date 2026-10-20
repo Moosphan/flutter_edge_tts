@@ -16,6 +16,14 @@ void main() {
     expect(pcm.frameCount, 2);
   });
 
+  test('exposes WAV file synthesis APIs', () {
+    final tts = FlutterEdgeTts(voice: 'en-US-AriaNeural');
+    addTearDown(tts.close);
+
+    expect(tts.synthesizeToWavFile, isA<Function>());
+    expect(tts.synthesizeSsmlToWavFile, isA<Function>());
+  });
+
   group('EdgeTtsSsmlBuilder', () {
     test('builds SSML with inferred locale and escaped text', () {
       const config = EdgeTtsConfig(voice: 'en-US-AriaNeural');
