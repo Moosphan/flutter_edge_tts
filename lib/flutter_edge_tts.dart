@@ -9,3 +9,4 @@ export 'src/models/edge_tts_stream_event.dart';
 export 'src/models/edge_tts_synthesis_result.dart';
 export 'src/models/edge_tts_voice.dart';
 export 'src/ssml/edge_tts_ssml_builder.dart';
+export 'src/utils/edge_tts_wav_encoder.dart';
