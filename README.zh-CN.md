@@ -203,38 +203,6 @@ Edge Read Aloud 端点不会为直接 WAV（`riff-24khz-16bit-mono-pcm`）请求
 
 仓库自带一个可运行 demo，位置在 [example/lib/main.dart](example/lib/main.dart)。它演示了音色加载、音色选择、输出格式切换、元数据开关以及文件合成。
 
-## 发布到 pub.dev
-
-请使用仓库内的发布脚本上传到官方
-[`pub.dev`](https://pub.dev) 仓库。它会拒绝含未提交改动的 Git 工作树，临时忽略
-`PUB_HOSTED_URL` 等镜像环境变量，检查网络连通性，并在发布前依次运行
-`flutter analyze`、`flutter test` 和 `flutter pub publish --dry-run`。
-
-仅校验发布包、不上传：
-
-```bash
-./scripts/publish.sh --dry-run-only
-```
-
-交互式发布（推荐）：
-
-```bash
-./scripts/publish.sh
-```
-
-用于 CI 或明确需要无交互发布时，`--yes` 会在所有检查和 dry-run 成功后向 Pub
-传递 `--force`，跳过第二次确认。发布不可撤销，使用前请确认版本号和更新日志：
-
-```bash
-./scripts/publish.sh --yes
-```
-
-如果网络需要代理，请显式指定：
-
-```bash
-./scripts/publish.sh --yes --proxy http://127.0.0.1:7897
-```
-
 ## 说明
 
 - 高级文本 API 默认会做 XML 转义；原始 SSML 仍应由调用方保证内容安全。
