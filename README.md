@@ -57,7 +57,7 @@
 
 ```yaml
 dependencies:
-  flutter_edge_tts: ^0.0.2
+  flutter_edge_tts: ^0.0.3
 ```
 
 ```bash

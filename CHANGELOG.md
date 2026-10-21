@@ -1,4 +1,4 @@
-## Unreleased
+## 0.0.3
 
 * Added `synthesizeToWavFile` and `synthesizeSsmlToWavFile`, which locally
   decode Edge MP3 output to PCM16 RIFF/WAVE files.
@@ -8,6 +8,8 @@
 * Restored compatibility with Edge's v2 Sec-MS-GEC authentication protocol.
 * Kept direct Edge WAV output unsupported because the upstream endpoint
   completes WAV requests without returning audio.
+* Updated the example's WAV option to use the local conversion API rather than
+  Edge's unavailable RIFF output format.
 
 ## 0.0.2
 
