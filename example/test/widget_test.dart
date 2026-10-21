@@ -28,4 +28,21 @@ void main() {
     expect(find.byType(TextField), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('labels WAV as a local conversion export', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const EdgeTtsExampleApp());
+    await tester.pump();
+
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -500));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('MP3 24kHz / 96kbps'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('WAV 24kHz / 16-bit (local conversion)'),
+      findsOneWidget,
+    );
+  });
 }

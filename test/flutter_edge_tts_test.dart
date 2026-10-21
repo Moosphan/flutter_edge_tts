@@ -1,8 +1,44 @@
+import 'dart:typed_data';
+
+import 'package:audio_decode/audio_decode.dart';
 import 'package:flutter_edge_tts/flutter_edge_tts.dart';
 import 'package:flutter_edge_tts/src/utils/edge_tts_utils.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('decoder dependency provides PCM audio geometry', () {
+    final pcm = PcmAudio(
+      sampleRate: 24000,
+      channels: 1,
+      samples: Int16List.fromList(<int>[0, 1]),
+    );
+
+    expect(pcm.frameCount, 2);
+  });
+
+  test('exposes WAV file synthesis APIs', () {
+    final tts = FlutterEdgeTts(voice: 'en-US-AriaNeural');
+    addTearDown(tts.close);
+
+    final Future<EdgeTtsFileResult> Function(
+      String, {
+      required String audioFilePath,
+      String? metadataFilePath,
+      EdgeTtsProsody prosody,
+      EdgeTtsConfig? config,
+      bool escapeText,
+    }) synthesizeToWavFile = tts.synthesizeToWavFile;
+    final Future<EdgeTtsFileResult> Function(
+      String, {
+      required String audioFilePath,
+      String? metadataFilePath,
+      EdgeTtsConfig? config,
+    }) synthesizeSsmlToWavFile = tts.synthesizeSsmlToWavFile;
+
+    expect(synthesizeToWavFile, isA<Function>());
+    expect(synthesizeSsmlToWavFile, isA<Function>());
+  });
+
   group('EdgeTtsSsmlBuilder', () {
     test('builds SSML with inferred locale and escaped text', () {
       const config = EdgeTtsConfig(voice: 'en-US-AriaNeural');

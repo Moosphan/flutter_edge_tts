@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:audio_decode/audio_decode.dart';
 import 'package:http/http.dart' as http;
 
 import 'models/edge_tts_config.dart';
@@ -16,6 +17,7 @@ import 'models/edge_tts_synthesis_result.dart';
 import 'models/edge_tts_voice.dart';
 import 'ssml/edge_tts_ssml_builder.dart';
 import 'utils/edge_tts_utils.dart';
+import 'utils/edge_tts_wav_encoder.dart';
 
 class FlutterEdgeTts {
   FlutterEdgeTts({
@@ -30,14 +32,14 @@ class FlutterEdgeTts {
     this.enableLogging = false,
     this.connectionTimeout = const Duration(seconds: 20),
     http.Client? httpClient,
-  })  : _httpClient = httpClient ?? http.Client(),
-        _config = EdgeTtsConfig(
-          voice: voice,
-          outputFormat: outputFormat,
-          voiceLocale: voiceLocale,
-          enableSentenceBoundary: enableSentenceBoundary,
-          enableWordBoundary: enableWordBoundary,
-        );
+  }) : _httpClient = httpClient ?? http.Client(),
+       _config = EdgeTtsConfig(
+         voice: voice,
+         outputFormat: outputFormat,
+         voiceLocale: voiceLocale,
+         enableSentenceBoundary: enableSentenceBoundary,
+         enableWordBoundary: enableWordBoundary,
+       );
 
   static const String _trustedClientToken = '6A5AA1D4EAFF4E9FB37E23D68491D6F4';
   static const String _voicesUrl =
@@ -66,30 +68,30 @@ class FlutterEdgeTts {
   EdgeTtsConfig get config => _config;
 
   Map<String, String> get _baseHeaders => <String, String>{
-        HttpHeaders.userAgentHeader: userAgent,
-        HttpHeaders.acceptEncodingHeader: 'gzip, deflate, br, zstd',
-        HttpHeaders.acceptLanguageHeader: 'en-US,en;q=0.9',
-      };
+    HttpHeaders.userAgentHeader: userAgent,
+    HttpHeaders.acceptEncodingHeader: 'gzip, deflate, br, zstd',
+    HttpHeaders.acceptLanguageHeader: 'en-US,en;q=0.9',
+  };
 
   Map<String, String> get _voiceHeaders => <String, String>{
-        ..._baseHeaders,
-        'Authority': 'speech.platform.bing.com',
-        'Sec-CH-UA':
-            '" Not;A Brand";v="99", "Microsoft Edge";v="143", "Chromium";v="143"',
-        'Sec-CH-UA-Mobile': '?0',
-        HttpHeaders.acceptHeader: '*/*',
-        'Sec-Fetch-Site': 'none',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Dest': 'empty',
-      };
+    ..._baseHeaders,
+    'Authority': 'speech.platform.bing.com',
+    'Sec-CH-UA':
+        '" Not;A Brand";v="99", "Microsoft Edge";v="143", "Chromium";v="143"',
+    'Sec-CH-UA-Mobile': '?0',
+    HttpHeaders.acceptHeader: '*/*',
+    'Sec-Fetch-Site': 'none',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Dest': 'empty',
+  };
 
   Map<String, String> _buildWebSocketHeaders() => <String, String>{
-        ..._baseHeaders,
-        'Pragma': 'no-cache',
-        'Cache-Control': 'no-cache',
-        'Origin': origin,
-        'Sec-WebSocket-Version': '13',
-      };
+    ..._baseHeaders,
+    'Pragma': 'no-cache',
+    'Cache-Control': 'no-cache',
+    'Origin': origin,
+    'Sec-WebSocket-Version': '13',
+  };
 
   void updateConfig(EdgeTtsConfig config) {
     _config = config;
@@ -101,10 +103,7 @@ class FlutterEdgeTts {
         'trustedclienttoken': _trustedClientToken,
       },
     );
-    final response = await _httpClient.get(
-      uri,
-      headers: _voiceHeaders,
-    );
+    final response = await _httpClient.get(uri, headers: _voiceHeaders);
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw EdgeTtsException(
@@ -266,6 +265,33 @@ class FlutterEdgeTts {
     );
   }
 
+  /// Synthesizes [text] and writes the result as a standard PCM16 WAV file.
+  ///
+  /// Edge does not return WAV bytes for its `riff-*` output format. This
+  /// method requests its working 24 kHz MP3 response, decodes it locally, and
+  /// writes the decoded samples to a RIFF/WAVE container instead.
+  Future<EdgeTtsFileResult> synthesizeToWavFile(
+    String text, {
+    required String audioFilePath,
+    String? metadataFilePath,
+    EdgeTtsProsody prosody = const EdgeTtsProsody(),
+    EdgeTtsConfig? config,
+    bool escapeText = true,
+  }) async {
+    final ssml = EdgeTtsSsmlBuilder.build(
+      text: text,
+      config: config ?? _config,
+      prosody: prosody,
+      escapeText: escapeText,
+    );
+    return synthesizeSsmlToWavFile(
+      ssml,
+      audioFilePath: audioFilePath,
+      metadataFilePath: metadataFilePath,
+      config: config,
+    );
+  }
+
   Future<EdgeTtsSynthesisResult> synthesizeSsml(
     String ssml, {
     EdgeTtsConfig? config,
@@ -304,27 +330,167 @@ class FlutterEdgeTts {
     EdgeTtsConfig? config,
   }) async {
     final result = await synthesizeSsml(ssml, config: config);
+    return _writeSynthesisResultToFile(
+      result,
+      audioFilePath: audioFilePath,
+      metadataFilePath: metadataFilePath,
+      atomic: false,
+    );
+  }
+
+  /// Synthesizes [ssml] and writes the locally decoded PCM16 as a WAV file.
+  ///
+  /// The caller's voice and metadata options are retained; only the Edge
+  /// output format is changed to the stable MP3 transport format.
+  Future<EdgeTtsFileResult> synthesizeSsmlToWavFile(
+    String ssml, {
+    required String audioFilePath,
+    String? metadataFilePath,
+    EdgeTtsConfig? config,
+  }) async {
+    final mp3Config = (config ?? _config).copyWith(
+      outputFormat: EdgeTtsOutputFormat.audio24Khz96KbitrateMonoMp3,
+    );
+    final mp3Result = await synthesizeSsml(ssml, config: mp3Config);
+    final wavResult = EdgeTtsSynthesisResult(
+      audioBytes: _decodeMp3AsWav(mp3Result.audioBytes),
+      metadata: mp3Result.metadata,
+      requestId: mp3Result.requestId,
+    );
+    return _writeSynthesisResultToFile(
+      wavResult,
+      audioFilePath: audioFilePath,
+      metadataFilePath: metadataFilePath,
+      atomic: true,
+    );
+  }
+
+  Uint8List _decodeMp3AsWav(Uint8List mp3Bytes) {
+    try {
+      return EdgeTtsWavEncoder.encodePcm16(decodeMp3(mp3Bytes));
+    } on EdgeTtsException {
+      rethrow;
+    } on Object catch (error) {
+      throw EdgeTtsException(
+        'wav_decode_failed',
+        'Failed to decode Edge MP3 audio for WAV export.',
+        cause: error,
+      );
+    }
+  }
+
+  Future<EdgeTtsFileResult> _writeSynthesisResultToFile(
+    EdgeTtsSynthesisResult result, {
+    required String audioFilePath,
+    String? metadataFilePath,
+    required bool atomic,
+  }) async {
     final audioFile = File(audioFilePath);
     await audioFile.parent.create(recursive: true);
-    await audioFile.writeAsBytes(result.audioBytes, flush: true);
-
-    String? savedMetadataPath;
-    if (metadataFilePath != null && result.metadata.isNotEmpty) {
-      final metadataFile = File(metadataFilePath);
-      await metadataFile.parent.create(recursive: true);
-      final metadata = EdgeTtsMetadata(items: result.metadata);
-      await metadataFile.writeAsString(
-        const JsonEncoder.withIndent('  ').convert(metadata.toJson()),
-        flush: true,
+    if (!atomic) {
+      await audioFile.writeAsBytes(result.audioBytes, flush: true);
+      String? savedMetadataPath;
+      if (metadataFilePath != null && result.metadata.isNotEmpty) {
+        final metadataFile = File(metadataFilePath);
+        await metadataFile.parent.create(recursive: true);
+        final metadata = EdgeTtsMetadata(items: result.metadata);
+        await metadataFile.writeAsString(
+          const JsonEncoder.withIndent('  ').convert(metadata.toJson()),
+          flush: true,
+        );
+        savedMetadataPath = metadataFile.path;
+      }
+      return EdgeTtsFileResult(
+        audioFilePath: audioFile.path,
+        metadataFilePath: savedMetadataPath,
+        result: result,
       );
-      savedMetadataPath = metadataFile.path;
     }
 
-    return EdgeTtsFileResult(
-      audioFilePath: audioFile.path,
-      metadataFilePath: savedMetadataPath,
-      result: result,
-    );
+    final audioTemporaryFile = _temporarySibling(audioFile, result.requestId);
+    File? metadataFile;
+    File? metadataTemporaryFile;
+    File? audioBackupFile;
+    File? metadataBackupFile;
+    var audioReplaced = false;
+    var metadataReplaced = false;
+    var committed = false;
+    try {
+      await audioTemporaryFile.writeAsBytes(result.audioBytes, flush: true);
+
+      if (metadataFilePath != null && result.metadata.isNotEmpty) {
+        metadataFile = File(metadataFilePath);
+        await metadataFile.parent.create(recursive: true);
+        metadataTemporaryFile = _temporarySibling(
+          metadataFile,
+          result.requestId,
+        );
+        final metadata = EdgeTtsMetadata(items: result.metadata);
+        await metadataTemporaryFile.writeAsString(
+          const JsonEncoder.withIndent('  ').convert(metadata.toJson()),
+          flush: true,
+        );
+      }
+
+      audioBackupFile = await _backupExisting(audioFile, result.requestId);
+      if (metadataFile != null && metadataTemporaryFile != null) {
+        metadataBackupFile = await _backupExisting(
+          metadataFile,
+          result.requestId,
+        );
+      }
+      await audioTemporaryFile.rename(audioFile.path);
+      audioReplaced = true;
+      if (metadataFile != null && metadataTemporaryFile != null) {
+        await metadataTemporaryFile.rename(metadataFile.path);
+        metadataReplaced = true;
+      }
+      committed = true;
+      await _deleteIfExists(audioBackupFile);
+      await _deleteIfExists(metadataBackupFile);
+
+      return EdgeTtsFileResult(
+        audioFilePath: audioFile.path,
+        metadataFilePath: metadataFile?.path,
+        result: result,
+      );
+    } finally {
+      if (!committed) {
+        if (audioReplaced && await audioFile.exists()) await audioFile.delete();
+        if (audioBackupFile != null && await audioBackupFile.exists()) {
+          await audioBackupFile.rename(audioFile.path);
+        }
+        if (metadataReplaced &&
+            metadataFile != null &&
+            await metadataFile.exists()) {
+          await metadataFile.delete();
+        }
+        if (metadataBackupFile != null && await metadataBackupFile.exists()) {
+          await metadataBackupFile.rename(metadataFile!.path);
+        }
+      }
+      if (await audioTemporaryFile.exists()) {
+        await audioTemporaryFile.delete();
+      }
+      if (metadataTemporaryFile != null &&
+          await metadataTemporaryFile.exists()) {
+        await metadataTemporaryFile.delete();
+      }
+    }
+  }
+
+  File _temporarySibling(File destination, String requestId) =>
+      File('${destination.path}.tmp.$requestId');
+
+  Future<File?> _backupExisting(File destination, String requestId) async {
+    if (!await destination.exists()) return null;
+    final backup = _temporarySibling(destination, '$requestId.backup');
+    await destination.rename(backup.path);
+    return backup;
+  }
+
+  Future<void> _deleteIfExists(File? file) async {
+    if (file != null && await file.exists()) await file.delete();
   }
 
   Future<void> close() async {
@@ -341,8 +507,9 @@ class FlutterEdgeTts {
     final url = await _buildSynthesisUrl();
     _log('Connecting websocket: $url');
     final uri = Uri.parse(url);
-    final requestUri =
-        uri.replace(scheme: uri.scheme == 'wss' ? 'https' : 'http');
+    final requestUri = uri.replace(
+      scheme: uri.scheme == 'wss' ? 'https' : 'http',
+    );
     final httpClient = HttpClient()..userAgent = userAgent;
     try {
       final request = await httpClient
@@ -446,9 +613,9 @@ class FlutterEdgeTts {
       String value => Uint8List.fromList(utf8.encode(value)),
       List<int> value => Uint8List.fromList(value),
       _ => throw EdgeTtsException(
-          'invalid_message_type',
-          'Received unsupported websocket message type: ${message.runtimeType}.',
-        ),
+        'invalid_message_type',
+        'Received unsupported websocket message type: ${message.runtimeType}.',
+      ),
     };
     final text = utf8.decode(bytes, allowMalformed: true);
 
