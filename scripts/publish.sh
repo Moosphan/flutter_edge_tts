@@ -223,6 +223,10 @@ if [[ "$AUTO_CONFIRM" -ne 1 ]]; then
 fi
 
 log step "Publishing to pub.dev"
-run_pub_command publish
+if [[ "$AUTO_CONFIRM" -eq 1 ]]; then
+  run_pub_command publish --force
+else
+  run_pub_command publish
+fi
 
 log done "Publish command completed."
