@@ -42,7 +42,9 @@ grep -Fx 'pub publish --force' "$CALL_LOG"
 
 grep -Fq './scripts/publish.sh --dry-run-only' "$ROOT_DIR/README.md"
 grep -Fq './scripts/publish.sh --yes' "$ROOT_DIR/README.md"
+grep -Fxq '  flutter_edge_tts: ^0.0.3' "$ROOT_DIR/README.md"
 grep -Fq './scripts/publish.sh --dry-run-only' "$ROOT_DIR/README.zh-CN.md"
 grep -Fq './scripts/publish.sh --yes' "$ROOT_DIR/README.zh-CN.md"
+grep -Fxq '  flutter_edge_tts: ^0.0.3' "$ROOT_DIR/README.zh-CN.md"
 
 printf 'publish script regression test passed\n'
