@@ -40,4 +40,9 @@ PATH="$FAKE_BIN:$PATH" bash "$ROOT_DIR/scripts/publish.sh" \
 grep -Fx 'pub publish --dry-run' "$CALL_LOG"
 grep -Fx 'pub publish --force' "$CALL_LOG"
 
+grep -Fq './scripts/publish.sh --dry-run-only' "$ROOT_DIR/README.md"
+grep -Fq './scripts/publish.sh --yes' "$ROOT_DIR/README.md"
+grep -Fq './scripts/publish.sh --dry-run-only' "$ROOT_DIR/README.zh-CN.md"
+grep -Fq './scripts/publish.sh --yes' "$ROOT_DIR/README.zh-CN.md"
+
 printf 'publish script regression test passed\n'

@@ -208,6 +208,40 @@ When sentence or word boundary metadata is enabled, synthesis can return structu
 
 A runnable demo app is included in [example/lib/main.dart](example/lib/main.dart). It demonstrates voice loading, voice selection, output format selection, metadata toggles, and file synthesis.
 
+## Publish to pub.dev
+
+Use the repository release script to publish to the official
+[`pub.dev`](https://pub.dev) registry. It refuses a dirty Git worktree,
+temporarily ignores mirror environment variables such as `PUB_HOSTED_URL`,
+checks connectivity, then runs `flutter analyze`, `flutter test`, and
+`flutter pub publish --dry-run` before publication.
+
+Verify a release without uploading it:
+
+```bash
+./scripts/publish.sh --dry-run-only
+```
+
+Publish interactively (recommended):
+
+```bash
+./scripts/publish.sh
+```
+
+For CI or a deliberately non-interactive release, `--yes` also passes
+Pub's `--force` flag after all checks and the dry-run succeed. Publishing is
+irreversible, so verify the version and changelog before using it:
+
+```bash
+./scripts/publish.sh --yes
+```
+
+If your network requires a proxy, specify it explicitly:
+
+```bash
+./scripts/publish.sh --yes --proxy http://127.0.0.1:7897
+```
+
 ## Notes
 
 - The high-level text API escapes text by default. Raw SSML should still be XML-safe.
